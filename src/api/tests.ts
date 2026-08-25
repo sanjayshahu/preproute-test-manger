@@ -1,13 +1,10 @@
+
 import api from "./client";
 
 import type {
   Test,
   TestsResponse,
 } from "../types/test";
-
-
-
-
 
 export interface CreateTestPayload {
   name: string;
@@ -25,16 +22,16 @@ export interface CreateTestPayload {
   status: string | null;
 }
 
-
 export const createTest = async (
   payload: CreateTestPayload
 ): Promise<Test> => {
-  const response = await api.post("/tests", payload);
+  const response = await api.post(
+    "/tests",
+    payload
+  );
 
   return response.data.data;
 };
-
-
 
 export const getTests = async (): Promise<Test[]> => {
   const response = await api.get<TestsResponse>(
@@ -44,8 +41,12 @@ export const getTests = async (): Promise<Test[]> => {
   return response.data.data;
 };
 
-export const getTestById = async (testId: string) => {
-  const response = await api.get(`/tests/${testId}`);
+export const getTestById = async (
+  testId: string
+): Promise<Test> => {
+  const response = await api.get(
+    `/tests/${testId}`
+  );
 
   return response.data.data;
 };

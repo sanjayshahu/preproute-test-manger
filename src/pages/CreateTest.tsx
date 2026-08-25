@@ -345,40 +345,37 @@ export default function CreateTest() {
       // CREATE PAYLOAD
       // -----------------------------
 
-      const payload: CreateTestPayload = {
-        name: data.name,
+    const payload: CreateTestPayload = {
+  name: data.name.trim(),
 
-        type: data.type,
+ 
+  type:
+    data.type === "subjectwise"
+      ? "chapterwise"
+      : data.type,
 
-        subject: data.subject,
+  subject: data.subject,
 
-        topics: data.topics,
+  topics: data.topics,
 
-        sub_topics: data.sub_topics,
+  sub_topics: data.sub_topics,
 
-        correct_marks:
-          data.correct_marks,
+  correct_marks: Number(data.correct_marks),
 
-        wrong_marks:
-          data.wrong_marks,
+  wrong_marks: Number(data.wrong_marks),
 
-        unattempt_marks:
-          data.unattempt_marks,
+  unattempt_marks: Number(data.unattempt_marks),
 
-        difficulty:
-          data.difficulty,
+  difficulty: data.difficulty,
 
-        total_time:
-          data.total_time,
+  total_time: Number(data.total_time),
 
-        total_marks:
-          data.total_marks,
+  total_marks: Number(data.total_marks),
 
-        total_questions:
-          data.total_questions,
+  total_questions: Number(data.total_questions),
 
-        status: 'draft',
-      };
+  status: "draft",
+};
 
       console.log(
         "📦 CREATE TEST PAYLOAD:",
@@ -608,17 +605,14 @@ export default function CreateTest() {
                     Select test type
                   </option>
 
-                  <option value="chapterwise">
-                    Chapterwise
-                  </option>
+                 <option value="chapterwise">
+  Chapterwise
+</option>
 
-                  <option value="subjectwise">
-                    Subjectwise
-                  </option>
-
-                  <option value="full_length">
-                    Full Length
-                  </option>
+<option value="full_length">
+  Full Length
+</option>
+                
 
                 </select>
 

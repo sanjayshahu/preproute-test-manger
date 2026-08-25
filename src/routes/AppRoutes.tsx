@@ -4,6 +4,7 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import CreateTest from "../pages/CreateTest";
 import AddQuestions from "../pages/AddQuestions";
+import TestPreview from "../pages/TestPreview";
 
 function ProtectedRoute({
   children,
@@ -45,6 +46,10 @@ export default function AppRoutes() {
     path="/tests/:testId/questions"
     element={<ProtectedRoute><AddQuestions /></ProtectedRoute>}
   />
+  <Route
+  path="/tests/:testId/preview"
+  element={<ProtectedRoute><TestPreview /></ProtectedRoute>}
+/>
 
       <Route
         path="*"
