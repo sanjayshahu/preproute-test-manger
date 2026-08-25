@@ -44,3 +44,9 @@ export const getTests = async (): Promise<Test[]> => {
   return response.data.data;
 };
 
+export const getTestById = async (testId: string) => {
+  const response = await api.get(`/tests/${testId}`);
+
+  return response.data.data;
+};
+
