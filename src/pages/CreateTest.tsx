@@ -1,10 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { CreateTestPayload } from "../api/tests";
-import { createTest } from "../api/tests";
+import type {
+  CreateTestPayload,
+} from "../api/tests";
+
+import {
+  createTest,
+  getTestById,
+  updateTest,
+} from "../api/tests";
 
 import {
   testSchema,
@@ -12,12 +22,15 @@ import {
 } from "../validation/testSchema";
 
 import type { Subject } from "../types/subject";
+
 import type {
   Topic,
   SubTopic,
 } from "../types/topic";
 
-import { getSubjects } from "../api/subjects";
+import {
+  getSubjects,
+} from "../api/subjects";
 
 import {
   getTopicsBySubject,
@@ -29,9 +42,15 @@ import "./CreateTest.css";
 export default function CreateTest() {
   const navigate = useNavigate();
 
-  // -----------------------------
+  const { testId } = useParams<{
+    testId: string;
+  }>();
+
+  const isEditMode = Boolean(testId);
+
+  // --------------------------------------------------
   // API DATA
-  // -----------------------------
+  // --------------------------------------------------
 
   const [subjects, setSubjects] =
     useState<Subject[]>([]);
@@ -42,9 +61,9 @@ export default function CreateTest() {
   const [subTopics, setSubTopics] =
     useState<SubTopic[]>([]);
 
-  // -----------------------------
-  // LOADING STATES
-  // -----------------------------
+  // --------------------------------------------------
+  // LOADING
+  // --------------------------------------------------
 
   const [loadingSubjects, setLoadingSubjects] =
     useState(false);
@@ -55,19 +74,30 @@ export default function CreateTest() {
   const [loadingSubTopics, setLoadingSubTopics] =
     useState(false);
 
+  const [loadingTest, setLoadingTest] =
+    useState(false);
+
   const [submitLoading, setSubmitLoading] =
     useState(false);
 
-  // -----------------------------
-  // API ERROR
-  // -----------------------------
+  // --------------------------------------------------
+  // ERROR
+  // --------------------------------------------------
 
   const [apiError, setApiError] =
     useState("");
 
-  // -----------------------------
-  // REACT HOOK FORM
-  // -----------------------------
+  // --------------------------------------------------
+  // IMPORTANT:
+  // Prevent normal subject/topic effects from
+  // interfering while edit data is being populated.
+  // --------------------------------------------------
+
+  const hydratingEdit = useRef(false);
+
+  // --------------------------------------------------
+  // FORM
+  // --------------------------------------------------
 
   const {
     register,
@@ -82,34 +112,23 @@ export default function CreateTest() {
 
     defaultValues: {
       name: "",
-
       subject: "",
-
       type: "",
-
       topics: [],
-
       sub_topics: [],
-
       difficulty: "",
-
       correct_marks: 4,
-
       wrong_marks: -1,
-
       unattempt_marks: 0,
-
       total_time: 60,
-
       total_marks: 40,
-
       total_questions: 10,
     },
   });
 
-  // -----------------------------
-  // WATCH FORM VALUES
-  // -----------------------------
+  // --------------------------------------------------
+  // WATCH
+  // --------------------------------------------------
 
   const selectedSubject =
     watch("subject");
@@ -117,63 +136,79 @@ export default function CreateTest() {
   const selectedTopics =
     watch("topics");
 
-  // -----------------------------
+  // --------------------------------------------------
   // LOAD SUBJECTS
-  // -----------------------------
+  // --------------------------------------------------
 
   useEffect(() => {
     loadSubjects();
   }, []);
 
-  // -----------------------------
-  // SUBJECT → TOPICS
-  // -----------------------------
+  // --------------------------------------------------
+  // EDIT MODE
+  //
+  // API returns:
+  //
+  // subject: "Political Science"
+  // topics: ["Political Theory"]
+  // sub_topics: ["Socialism"]
+  //
+  // We convert them to IDs here.
+  // --------------------------------------------------
 
   useEffect(() => {
+    if (!testId) {
+      return;
+    }
+
+    hydrateEditTest(testId);
+  }, [testId]);
+
+  // --------------------------------------------------
+  // NORMAL SUBJECT CHANGE
+  // --------------------------------------------------
+
+  useEffect(() => {
+    if (hydratingEdit.current) {
+      return;
+    }
+
     if (!selectedSubject) {
       setTopics([]);
-
       setSubTopics([]);
 
-      setValue(
-        "topics",
-        []
-      );
-
-      setValue(
-        "sub_topics",
-        []
-      );
+      setValue("topics", []);
+      setValue("sub_topics", []);
 
       return;
     }
 
-    loadTopics(selectedSubject);
+    loadTopicsForSubject(selectedSubject);
   }, [
     selectedSubject,
     setValue,
   ]);
 
-  // -----------------------------
-  // TOPICS → SUB TOPICS
-  // -----------------------------
+  // --------------------------------------------------
+  // NORMAL TOPIC CHANGE
+  // --------------------------------------------------
 
   useEffect(() => {
+    if (hydratingEdit.current) {
+      return;
+    }
+
     if (
       !selectedTopics ||
       selectedTopics.length === 0
     ) {
       setSubTopics([]);
-
-      setValue(
-        "sub_topics",
-        []
-      );
+      setValue("sub_topics", []);
 
       return;
     }
 
-    loadSubTopics(
+    loadSubTopicsForTopicIds(
       selectedTopics
     );
   }, [
@@ -181,25 +216,27 @@ export default function CreateTest() {
     setValue,
   ]);
 
-  // -----------------------------
-  // GET SUBJECTS
-  // -----------------------------
+  // ==================================================
+  // LOAD SUBJECTS
+  // ==================================================
 
   const loadSubjects = async () => {
     try {
       setLoadingSubjects(true);
-
       setApiError("");
 
-      const data =
-        await getSubjects();
+      const data = await getSubjects();
 
       console.log(
         "📚 SUBJECTS:",
         data
       );
 
-      setSubjects(data);
+      setSubjects(
+        Array.isArray(data)
+          ? data
+          : []
+      );
     } catch (error) {
       console.error(
         "❌ SUBJECT ERROR:",
@@ -207,44 +244,32 @@ export default function CreateTest() {
       );
 
       setApiError(
-        "Failed to load subjects"
+        "Failed to load subjects."
       );
     } finally {
       setLoadingSubjects(false);
     }
   };
 
-  // -----------------------------
-  // GET TOPICS
-  // -----------------------------
+  // ==================================================
+  // LOAD TOPICS
+  // ==================================================
 
-  const loadTopics = async (
+  const loadTopicsForSubject = async (
     subjectId: string
   ) => {
     try {
       setLoadingTopics(true);
-
       setApiError("");
 
-      // Clear old topics
       setTopics([]);
-
-      // Clear old sub topics
       setSubTopics([]);
 
-      // Clear selected values
-      setValue(
-        "topics",
-        []
-      );
-
-      setValue(
-        "sub_topics",
-        []
-      );
+      setValue("topics", []);
+      setValue("sub_topics", []);
 
       console.log(
-        "📚 LOADING TOPICS FOR SUBJECT:",
+        "📚 LOADING TOPICS FOR SUBJECT ID:",
         subjectId
       );
 
@@ -258,7 +283,11 @@ export default function CreateTest() {
         data
       );
 
-      setTopics(data);
+      setTopics(
+        Array.isArray(data)
+          ? data
+          : []
+      );
     } catch (error) {
       console.error(
         "❌ TOPICS ERROR:",
@@ -266,192 +295,648 @@ export default function CreateTest() {
       );
 
       setApiError(
-        "Failed to load topics"
+        "Failed to load topics."
       );
     } finally {
       setLoadingTopics(false);
     }
   };
 
-  // -----------------------------
-  // GET SUB TOPICS
-  // -----------------------------
+  // ==================================================
+  // LOAD SUB TOPICS
+  // ==================================================
 
-  const loadSubTopics = async (
-    topicIds: string[]
-  ) => {
-    try {
-      setLoadingSubTopics(true);
+  const loadSubTopicsForTopicIds =
+    async (
+      topicIds: string[]
+    ) => {
+      try {
+        setLoadingSubTopics(true);
+        setApiError("");
 
-      setApiError("");
+        setValue(
+          "sub_topics",
+          []
+        );
 
-      setValue(
-        "sub_topics",
-        []
-      );
-
-      console.log(
-        "📚 LOADING SUB TOPICS FOR:",
-        topicIds
-      );
-
-      const data =
-        await getSubTopicsByTopics(
+        console.log(
+          "📚 LOADING SUB TOPICS FOR TOPIC IDS:",
           topicIds
         );
 
-      console.log(
-        "📚 SUB TOPICS:",
-        data
-      );
+        const data =
+          await getSubTopicsByTopics(
+            topicIds
+          );
 
-      setSubTopics(data);
-    } catch (error) {
-      console.error(
-        "❌ SUB TOPICS ERROR:",
-        error
-      );
-
-      setApiError(
-        "Failed to load sub-topics"
-      );
-    } finally {
-      setLoadingSubTopics(false);
-    }
-  };
-
-  // -----------------------------
-  // SUBMIT FORM
-  // -----------------------------
-
-  const onSubmit = async (
-    data: TestFormValues
-  ) => {
-    console.log(
-      "🔥 SUBMIT HANDLER FIRED"
-    );
-
-    console.log(
-      "📝 FORM DATA:",
-      data
-    );
-
-    setSubmitLoading(true);
-
-    setApiError("");
-
-    try {
-      // -----------------------------
-      // CREATE PAYLOAD
-      // -----------------------------
-
-    const payload: CreateTestPayload = {
-  name: data.name.trim(),
-
- 
-  type:
-    data.type === "subjectwise"
-      ? "chapterwise"
-      : data.type,
-
-  subject: data.subject,
-
-  topics: data.topics,
-
-  sub_topics: data.sub_topics,
-
-  correct_marks: Number(data.correct_marks),
-
-  wrong_marks: Number(data.wrong_marks),
-
-  unattempt_marks: Number(data.unattempt_marks),
-
-  difficulty: data.difficulty,
-
-  total_time: Number(data.total_time),
-
-  total_marks: Number(data.total_marks),
-
-  total_questions: Number(data.total_questions),
-
-  status: "draft",
-};
-
-      console.log(
-        "📦 CREATE TEST PAYLOAD:",
-        payload
-      );
-
-      // -----------------------------
-      // CALL POST /tests
-      // -----------------------------
-
-      console.log(
-        "🚀 ABOUT TO CALL POST /tests"
-      );
-
-      const test =
-        await createTest(
-          payload
+        console.log(
+          "📚 SUB TOPICS:",
+          data
         );
 
-      // -----------------------------
-      // API RESPONSE
-      // -----------------------------
+        setSubTopics(
+          Array.isArray(data)
+            ? data
+            : []
+        );
+      } catch (error) {
+        console.error(
+          "❌ SUB TOPICS ERROR:",
+          error
+        );
+
+        setApiError(
+          "Failed to load sub-topics."
+        );
+      } finally {
+        setLoadingSubTopics(false);
+      }
+    };
+
+  // ==================================================
+  // HYDRATE EDIT TEST
+  // ==================================================
+
+  const hydrateEditTest = async (
+    id: string
+  ) => {
+    hydratingEdit.current = true;
+
+    try {
+      setLoadingTest(true);
+      setApiError("");
 
       console.log(
-        "✅ CREATED TEST:",
+        "✏️ LOADING TEST FOR EDIT:",
+        id
+      );
+
+      // ----------------------------------------------
+      // 1. GET TEST
+      // ----------------------------------------------
+
+      const test =
+        await getTestById(id);
+
+      console.log(
+        "✏️ EDIT TEST RESPONSE:",
         test
       );
 
-      // -----------------------------
-      // CHECK TEST ID
-      // -----------------------------
+      // ----------------------------------------------
+      // 2. LOAD SUBJECTS IF NOT ALREADY LOADED
+      // ----------------------------------------------
 
-      if (!test?.id) {
-        throw new Error(
-          "Test created but test ID was not returned"
+      let subjectList =
+        subjects;
+
+      if (
+        !subjectList ||
+        subjectList.length === 0
+      ) {
+        const subjectData =
+          await getSubjects();
+
+        subjectList =
+          Array.isArray(subjectData)
+            ? subjectData
+            : [];
+
+        setSubjects(
+          subjectList
         );
       }
 
-      // -----------------------------
-      // SAVE TEST ID
-      // -----------------------------
+      // ----------------------------------------------
+      // 3. API RETURNS SUBJECT NAME
+      //
+      // Example:
+      // test.subject = "Political Science"
+      //
+      // Find:
+      // "Political Science"
+      //       ↓
+      // UUID
+      // ----------------------------------------------
 
-      sessionStorage.setItem(
-        "currentTestId",
-        test.id
+      const subjectObject =
+        subjectList.find(
+          (subject) =>
+            subject.name.trim()
+              .toLowerCase() ===
+            String(
+              test.subject || ""
+            )
+              .trim()
+              .toLowerCase()
+        );
+
+      if (!subjectObject) {
+        throw new Error(
+          `Subject "${test.subject}" was not found.`
+        );
+      }
+
+      const subjectId =
+        subjectObject.id;
+
+      console.log(
+        "✅ SUBJECT NAME:",
+        test.subject
       );
 
       console.log(
-        "💾 SAVED TEST ID:",
-        test.id
+        "✅ SUBJECT ID:",
+        subjectId
       );
 
-      // -----------------------------
-      // NAVIGATE TO QUESTIONS
-      // -----------------------------
+      // ----------------------------------------------
+      // 4. SET BASIC TEST VALUES
+      // ----------------------------------------------
 
-      navigate(
-        `/tests/${test.id}/questions`
+      setValue(
+        "name",
+        test.name || ""
       );
-    } catch (error) {
+
+      setValue(
+        "subject",
+        subjectId
+      );
+
+      setValue(
+        "type",
+        test.type || ""
+      );
+
+      setValue(
+        "difficulty",
+        test.difficulty || ""
+      );
+
+      setValue(
+        "correct_marks",
+        Number(
+          test.correct_marks ?? 4
+        )
+      );
+
+      setValue(
+        "wrong_marks",
+        Number(
+          test.wrong_marks ?? -1
+        )
+      );
+
+      setValue(
+        "unattempt_marks",
+        Number(
+          test.unattempt_marks ?? 0
+        )
+      );
+
+      setValue(
+        "total_time",
+        Number(
+          test.total_time ?? 60
+        )
+      );
+
+      setValue(
+        "total_marks",
+        Number(
+          test.total_marks ?? 40
+        )
+      );
+
+      setValue(
+        "total_questions",
+        Number(
+          test.total_questions ?? 10
+        )
+      );
+
+      // ----------------------------------------------
+      // 5. LOAD TOPICS USING SUBJECT UUID
+      // ----------------------------------------------
+
+      setLoadingTopics(true);
+
+      const topicData =
+        await getTopicsBySubject(
+          subjectId
+        );
+
+      const topicList =
+        Array.isArray(topicData)
+          ? topicData
+          : [];
+
+      console.log(
+        "📚 TOPICS FOR EDIT:",
+        topicList
+      );
+
+      setTopics(
+        topicList
+      );
+
+      // ----------------------------------------------
+      // 6. API RETURNS TOPIC NAMES
+      //
+      // Example:
+      // ["Political Theory"]
+      //
+      // Convert:
+      // Political Theory
+      //       ↓
+      // topic UUID
+      // ----------------------------------------------
+
+      const testTopicNames =
+        Array.isArray(test.topics)
+          ? test.topics
+          : [];
+
+      const selectedTopicIds =
+        testTopicNames
+          .map(
+            (topicName: string) => {
+              const topic =
+                topicList.find(
+                  (item) =>
+                    item.name
+                      .trim()
+                      .toLowerCase() ===
+                    String(topicName)
+                      .trim()
+                      .toLowerCase()
+                );
+
+              if (!topic) {
+                console.warn(
+                  "⚠️ TOPIC NOT FOUND:",
+                  topicName
+                );
+
+                return null;
+              }
+
+              return topic.id;
+            }
+          )
+          .filter(
+            (
+              id
+            ): id is string =>
+              Boolean(id)
+          );
+
+      console.log(
+        "✅ TEST TOPIC NAMES:",
+        testTopicNames
+      );
+
+      console.log(
+        "✅ TEST TOPIC IDS:",
+        selectedTopicIds
+      );
+
+      setValue(
+        "topics",
+        selectedTopicIds
+      );
+
+      setLoadingTopics(false);
+
+      // ----------------------------------------------
+      // 7. LOAD SUB TOPICS USING TOPIC UUIDS
+      // ----------------------------------------------
+
+      let subTopicList:
+        SubTopic[] = [];
+
+      if (
+        selectedTopicIds.length > 0
+      ) {
+        setLoadingSubTopics(true);
+
+        const subTopicData =
+          await getSubTopicsByTopics(
+            selectedTopicIds
+          );
+
+        subTopicList =
+          Array.isArray(
+            subTopicData
+          )
+            ? subTopicData
+            : [];
+
+        console.log(
+          "📚 SUB TOPICS FOR EDIT:",
+          subTopicList
+        );
+
+        setSubTopics(
+          subTopicList
+        );
+      } else {
+        setSubTopics([]);
+      }
+
+      // ----------------------------------------------
+      // 8. API RETURNS SUB-TOPIC NAMES
+      //
+      // Example:
+      // ["Socialism"]
+      //
+      // Convert:
+      // Socialism
+      //    ↓
+      // sub-topic UUID
+      // ----------------------------------------------
+
+      const testSubTopicNames =
+        Array.isArray(
+          test.sub_topics
+        )
+          ? test.sub_topics
+          : [];
+
+      const selectedSubTopicIds =
+        testSubTopicNames
+          .map(
+            (
+              subTopicName: string
+            ) => {
+              const subTopic =
+                subTopicList.find(
+                  (item) =>
+                    item.name
+                      .trim()
+                      .toLowerCase() ===
+                    String(
+                      subTopicName
+                    )
+                      .trim()
+                      .toLowerCase()
+                );
+
+              if (!subTopic) {
+                console.warn(
+                  "⚠️ SUB TOPIC NOT FOUND:",
+                  subTopicName
+                );
+
+                return null;
+              }
+
+              return subTopic.id;
+            }
+          )
+          .filter(
+            (
+              id
+            ): id is string =>
+              Boolean(id)
+          );
+
+      console.log(
+        "✅ TEST SUB TOPIC NAMES:",
+        testSubTopicNames
+      );
+
+      console.log(
+        "✅ TEST SUB TOPIC IDS:",
+        selectedSubTopicIds
+      );
+
+      setValue(
+        "sub_topics",
+        selectedSubTopicIds
+      );
+
+      console.log(
+        "🎯 EDIT FORM HYDRATED:",
+        {
+          subjectId,
+          selectedTopicIds,
+          selectedSubTopicIds,
+        }
+      );
+    } catch (error: any) {
       console.error(
-        "❌ CREATE TEST ERROR:",
+        "❌ EDIT TEST ERROR:",
         error
       );
 
+      console.error(
+        "SERVER RESPONSE:",
+        error?.response?.data
+      );
+
       setApiError(
-        "Failed to create test. Please try again."
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load test for editing."
       );
     } finally {
-      setSubmitLoading(false);
+      setLoadingTest(false);
+      setLoadingTopics(false);
+      setLoadingSubTopics(false);
+
+      // ----------------------------------------------
+      // VERY IMPORTANT:
+      // Allow normal user changes now.
+      // ----------------------------------------------
+
+      hydratingEdit.current = false;
     }
   };
 
-  // -----------------------------
+  // ==================================================
+  // SUBMIT
+  // ==================================================
+
+  const onSubmit = async (
+  data: TestFormValues
+) => {
+  console.log(
+    "🔥 SUBMIT HANDLER FIRED"
+  );
+
+  console.log(
+    "📝 FORM DATA:",
+    data
+  );
+
+  setSubmitLoading(true);
+  setApiError("");
+
+  try {
+    /*
+     * IMPORTANT:
+     *
+     * The UI uses "full_length", but the
+     * database does not accept that value.
+     *
+     * Convert the frontend value to the
+     * backend/database value here.
+     */
+    const testType =
+      data.type === "full_length"
+        ? "full"
+        : data.type;
+
+    const payload: CreateTestPayload = {
+      name:
+        data.name.trim(),
+
+      type:
+        testType,
+
+      subject:
+        data.subject,
+
+      topics:
+        data.topics,
+
+      sub_topics:
+        data.sub_topics,
+
+      correct_marks:
+        Number(
+          data.correct_marks
+        ),
+
+      wrong_marks:
+        Number(
+          data.wrong_marks
+        ),
+
+      unattempt_marks:
+        Number(
+          data.unattempt_marks
+        ),
+
+      difficulty:
+        data.difficulty,
+
+      total_time:
+        Number(
+          data.total_time
+        ),
+
+      total_marks:
+        Number(
+          data.total_marks
+        ),
+
+      total_questions:
+        Number(
+          data.total_questions
+        ),
+
+      status:
+        "draft",
+    };
+
+    console.log(
+      "📦 FINAL CREATE/UPDATE PAYLOAD:",
+      payload
+    );
+
+    // ----------------------------------------------
+    // EDIT
+    // ----------------------------------------------
+
+    if (isEditMode && testId) {
+      console.log(
+        "✏️ UPDATING TEST:",
+        testId
+      );
+
+      const updatedTest =
+        await updateTest(
+          testId,
+          payload
+        );
+
+      console.log(
+        "✅ UPDATED TEST:",
+        updatedTest
+      );
+
+      sessionStorage.setItem(
+        "currentTestId",
+        testId
+      );
+
+      navigate(
+        `/tests/${testId}/preview`
+      );
+
+      return;
+    }
+
+    // ----------------------------------------------
+    // CREATE
+    // ----------------------------------------------
+
+    console.log(
+      "🚀 CREATING TEST"
+    );
+
+    const test =
+      await createTest(
+        payload
+      );
+
+    console.log(
+      "✅ CREATED TEST:",
+      test
+    );
+
+    if (!test?.id) {
+      throw new Error(
+        "Test created but test ID was not returned."
+      );
+    }
+
+    sessionStorage.setItem(
+      "currentTestId",
+      test.id
+    );
+
+    navigate(
+      `/tests/${test.id}/questions`
+    );
+
+  } catch (error: any) {
+    console.error(
+      "❌ SAVE TEST ERROR:",
+      error
+    );
+
+    console.error(
+      "SERVER RESPONSE:",
+      error?.response?.data
+    );
+
+    setApiError(
+      error?.response?.data?.message ||
+        "Failed to save test. Please try again."
+    );
+
+  } finally {
+    setSubmitLoading(false);
+  }
+};
+
+  // ==================================================
   // VALIDATION ERROR
-  // -----------------------------
+  // ==================================================
 
   const onValidationError = (
     formErrors: typeof errors
@@ -462,34 +947,52 @@ export default function CreateTest() {
     );
   };
 
-  // -----------------------------
+  // ==================================================
+  // LOADING EDIT TEST
+  // ==================================================
+
+  if (
+    isEditMode &&
+    loadingTest
+  ) {
+    return (
+      <main className="create-test-page">
+        <div className="create-test-container">
+          <div className="loading-state">
+            Loading test...
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ==================================================
   // UI
-  // -----------------------------
+  // ==================================================
 
   return (
     <main className="create-test-page">
       <div className="create-test-container">
 
-        {/* =========================
-            HEADER
-        ========================== */}
+        {/* HEADER */}
 
         <div className="create-test-header">
           <div>
             <h1>
-              Create New Test
+              {isEditMode
+                ? "Edit Test"
+                : "Create New Test"}
             </h1>
 
             <p>
-              Add test details before
-              adding questions.
+              {isEditMode
+                ? "Update test details before managing questions."
+                : "Add test details before adding questions."}
             </p>
           </div>
         </div>
 
-        {/* =========================
-            API ERROR
-        ========================== */}
+        {/* ERROR */}
 
         {apiError && (
           <div className="api-error">
@@ -497,9 +1000,7 @@ export default function CreateTest() {
           </div>
         )}
 
-        {/* =========================
-            FORM
-        ========================== */}
+        {/* FORM */}
 
         <form
           onSubmit={handleSubmit(
@@ -554,7 +1055,8 @@ export default function CreateTest() {
                 <select
                   {...register("subject")}
                   disabled={
-                    loadingSubjects
+                    loadingSubjects ||
+                    loadingTest
                   }
                 >
 
@@ -605,14 +1107,13 @@ export default function CreateTest() {
                     Select test type
                   </option>
 
-                 <option value="chapterwise">
-  Chapterwise
-</option>
+                  <option value="chapterwise">
+                    Chapterwise
+                  </option>
 
-<option value="full_length">
-  Full Length
-</option>
-                
+                  <option value="full_length">
+                    Full Length
+                  </option>
 
                 </select>
 
@@ -743,9 +1244,7 @@ export default function CreateTest() {
                     />
 
                     <span>
-                      {
-                        subTopic.name
-                      }
+                      {subTopic.name}
                     </span>
 
                   </label>
@@ -836,8 +1335,6 @@ export default function CreateTest() {
 
             <div className="form-grid">
 
-              {/* CORRECT MARKS */}
-
               <div className="form-field">
 
                 <label>
@@ -865,8 +1362,6 @@ export default function CreateTest() {
                 )}
 
               </div>
-
-              {/* WRONG MARKS */}
 
               <div className="form-field">
 
@@ -896,8 +1391,6 @@ export default function CreateTest() {
                 )}
 
               </div>
-
-              {/* UNATTEMPT MARKS */}
 
               <div className="form-field">
 
@@ -943,8 +1436,6 @@ export default function CreateTest() {
 
             <div className="form-grid">
 
-              {/* TOTAL TIME */}
-
               <div className="form-field">
 
                 <label>
@@ -977,8 +1468,6 @@ export default function CreateTest() {
 
               </div>
 
-              {/* TOTAL MARKS */}
-
               <div className="form-field">
 
                 <label>
@@ -1006,8 +1495,6 @@ export default function CreateTest() {
                 )}
 
               </div>
-
-              {/* TOTAL QUESTIONS */}
 
               <div className="form-field">
 
@@ -1051,7 +1538,11 @@ export default function CreateTest() {
               type="button"
               className="secondary-button"
               onClick={() =>
-                navigate("/dashboard")
+                navigate(
+                  isEditMode && testId
+                    ? `/tests/${testId}/preview`
+                    : "/dashboard"
+                )
               }
             >
               Cancel
@@ -1060,13 +1551,18 @@ export default function CreateTest() {
             <button
               type="submit"
               className="primary-button"
-              disabled={submitLoading}
+              disabled={
+                submitLoading ||
+                loadingTest
+              }
             >
-
               {submitLoading
-                ? "Creating..."
-                : "Save & Add Questions"}
-
+                ? isEditMode
+                  ? "Updating..."
+                  : "Creating..."
+                : isEditMode
+                  ? "Update Test"
+                  : "Save & Add Questions"}
             </button>
 
           </div>

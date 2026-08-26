@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { getTestById } from "../api/tests";
+import { getTestById, updateTest } from "../api/tests";
 import { fetchQuestionsBulk } from "../api/questions";
 
 import type { Test } from "../types/test";
@@ -31,9 +30,7 @@ export default function TestPreview() {
 
   const navigate = useNavigate();
 
-  const [test, setTest] = useState<Test | null>(
-    null
-  );
+  const [test, setTest] = useState<Test | null>(null);
 
   const [questions, setQuestions] = useState<
     PreviewQuestion[]
@@ -45,6 +42,12 @@ export default function TestPreview() {
 
   const [publishing, setPublishing] =
     useState(false);
+
+  /*
+   * ==========================================
+   * LOAD TEST + QUESTIONS
+   * ==========================================
+   */
 
   useEffect(() => {
     if (!testId) {
@@ -63,10 +66,11 @@ export default function TestPreview() {
           testId
         );
 
-        // ------------------------------------------------
-        // 1. Get test
-        // GET /api/tests/:id
-        // ------------------------------------------------
+        /*
+         * --------------------------------------
+         * 1. GET TEST
+         * --------------------------------------
+         */
 
         const testData =
           await getTestById(testId);
@@ -76,11 +80,28 @@ export default function TestPreview() {
           testData
         );
 
+        if (!testData) {
+          throw new Error(
+            "Test was not found."
+          );
+        }
+
         setTest(testData);
 
-        // ------------------------------------------------
-        // 2. Get question IDs from test
-        // ------------------------------------------------
+        /*
+         * --------------------------------------
+         * 2. GET QUESTION IDS
+         * --------------------------------------
+         *
+         * We only use test.questions to tell
+         * the API which questions belong to
+         * this test.
+         *
+         * IMPORTANT:
+         *
+         * We DO NOT use test.questions to
+         * reorder the final result.
+         */
 
         const questionIds =
           Array.isArray(testData.questions)
@@ -88,20 +109,30 @@ export default function TestPreview() {
             : [];
 
         console.log(
-          "QUESTION IDS:",
+          "QUESTION IDS FROM TEST:",
           questionIds
         );
 
-        // No questions
+        /*
+         * No questions.
+         */
+
         if (questionIds.length === 0) {
           setQuestions([]);
           return;
         }
 
-        // ------------------------------------------------
-        // 3. Fetch questions in bulk
-        // POST /api/questions/fetchBulk
-        // ------------------------------------------------
+        /*
+         * --------------------------------------
+         * 3. FETCH QUESTIONS
+         * --------------------------------------
+         *
+         * fetchQuestionsBulk() is already
+         * returning the questions in the
+         * correct order.
+         *
+         * We preserve that order.
+         */
 
         const questionData =
           await fetchQuestionsBulk(
@@ -109,14 +140,128 @@ export default function TestPreview() {
           );
 
         console.log(
-          "FETCHED QUESTIONS:",
+          "QUESTIONS RETURNED BY API:",
           questionData
         );
 
+        if (!Array.isArray(questionData)) {
+          setQuestions([]);
+          return;
+        }
+
+        /*
+         * --------------------------------------
+         * 4. NORMALIZE QUESTIONS
+         * --------------------------------------
+         *
+         * IMPORTANT:
+         *
+         * Do not sort.
+         * Do not reverse.
+         * Do not rebuild using test.questions.
+         *
+         * The array order returned from
+         * fetchQuestionsBulk() is preserved.
+         */
+
+        const normalizedQuestions: PreviewQuestion[] =
+          questionData
+            .filter(
+              (question: any) =>
+                question &&
+                question.id
+            )
+            .map(
+              (question: any) => ({
+                id: String(
+                  question.id
+                ),
+
+                type:
+                  question.type ||
+                  "mcq",
+
+                question:
+                  question.question ||
+                  "",
+
+                option1:
+                  question.option1 ||
+                  "",
+
+                option2:
+                  question.option2 ||
+                  "",
+
+                option3:
+                  question.option3 ||
+                  "",
+
+                option4:
+                  question.option4 ||
+                  "",
+
+                correct_option:
+                  question.correct_option ||
+                  "option1",
+
+                explanation:
+                  question.explanation ??
+                  "",
+
+                difficulty:
+                  question.difficulty ||
+                  "medium",
+
+                subject:
+                  question.subject ||
+                  testData.subject ||
+                  "",
+
+                test_id:
+                  question.test_id ||
+                  testId,
+              })
+            );
+
+        /*
+         * --------------------------------------
+         * 5. KEEP API RESPONSE ORDER
+         * --------------------------------------
+         *
+         * Example:
+         *
+         * API:
+         *
+         * 1. missl
+         * 2. final
+         * 3. wat
+         * 4. fire
+         * 5. howzees
+         *
+         * Preview will display exactly:
+         *
+         * 1. missl
+         * 2. final
+         * 3. wat
+         * 4. fire
+         * 5. howzees
+         */
+
+        console.log(
+          "FINAL PREVIEW ORDER:",
+          normalizedQuestions.map(
+            (question, index) => ({
+              number: index + 1,
+              id: question.id,
+              question:
+                question.question,
+            })
+          )
+        );
+
         setQuestions(
-          Array.isArray(questionData)
-            ? questionData
-            : []
+          normalizedQuestions
         );
       } catch (error: any) {
         console.error(
@@ -152,25 +297,66 @@ export default function TestPreview() {
     loadPreview();
   }, [testId]);
 
+  /*
+   * ==========================================
+   * BACK
+   * ==========================================
+   */
+
   const handleBack = () => {
     navigate("/dashboard");
   };
 
-  const handleEditTest = () => {
-    if (!testId) return;
+  /*
+   * ==========================================
+   * EDIT TEST
+   * ==========================================
+   */
 
-    navigate(`/tests/${testId}/edit`);
+  const handleEditTest = () => {
+    if (!testId) {
+      return;
+    }
+
+    navigate(
+      `/tests/${testId}/edit`
+    );
   };
+
+  /*
+   * ==========================================
+   * EDIT QUESTIONS
+   * ==========================================
+   */
 
   const handleEditQuestions = () => {
-    if (!testId) return;
+    if (!testId) {
+      return;
+    }
 
-    navigate(`/tests/${testId}/questions`);
+    navigate(
+      `/tests/${testId}/questions`
+    );
   };
+
+  /*
+   * ==========================================
+   * PUBLISH
+   * ==========================================
+   */
 
   const handlePublish = async () => {
     if (!testId) {
-      setError("Test ID is missing.");
+      setError(
+        "Test ID is missing."
+      );
+      return;
+    }
+
+    if (questions.length === 0) {
+      setError(
+        "At least one question is required before publishing."
+      );
       return;
     }
 
@@ -178,20 +364,29 @@ export default function TestPreview() {
       setPublishing(true);
       setError("");
 
-      // Publishing will use:
-      // PUT /api/tests/:id
-      //
-      // This is intentionally left until we verify
-      // the exact updateTest API implementation.
-
       console.log(
-        "READY TO PUBLISH TEST:",
+        "PUBLISHING TEST:",
         testId
       );
 
-      setError(
-        "Preview loaded successfully. Publish API is the next step."
+      const updatedTest =
+        await updateTest(
+          testId,
+          {
+            status: "live",
+          }
+        );
+
+      console.log(
+        "PUBLISHED TEST:",
+        updatedTest
       );
+
+      setTest(
+        updatedTest
+      );
+
+      navigate("/dashboard");
     } catch (error: any) {
       console.error(
         "PUBLISH ERROR:",
@@ -203,6 +398,16 @@ export default function TestPreview() {
         error?.response?.data
       );
 
+      console.error(
+        "STATUS:",
+        error?.response?.status
+      );
+
+      console.error(
+        "URL:",
+        error?.config?.url
+      );
+
       setError(
         error?.response?.data?.message ||
           "Failed to publish test."
@@ -211,6 +416,12 @@ export default function TestPreview() {
       setPublishing(false);
     }
   };
+
+  /*
+   * ==========================================
+   * LOADING
+   * ==========================================
+   */
 
   if (loading) {
     return (
@@ -224,12 +435,20 @@ export default function TestPreview() {
     );
   }
 
+  /*
+   * ==========================================
+   * TEST NOT FOUND
+   * ==========================================
+   */
+
   if (!test) {
     return (
       <main className="test-preview-page">
         <div className="test-preview-container">
+
           <div className="error-state">
-            {error || "Test not found."}
+            {error ||
+              "Test not found."}
           </div>
 
           <button
@@ -239,20 +458,31 @@ export default function TestPreview() {
           >
             Back to Dashboard
           </button>
+
         </div>
       </main>
     );
   }
 
+  /*
+   * ==========================================
+   * UI
+   * ==========================================
+   */
+
   return (
     <main className="test-preview-page">
+
       <div className="test-preview-container">
 
-        {/* Header */}
+        {/* =====================================
+            HEADER
+        ====================================== */}
 
         <header className="test-preview-header">
 
-          <div>
+          <div className="test-preview-title">
+
             <h1>
               Test Preview
             </h1>
@@ -261,6 +491,7 @@ export default function TestPreview() {
               Review the complete test before
               publishing.
             </p>
+
           </div>
 
           <div className="preview-actions">
@@ -293,7 +524,9 @@ export default function TestPreview() {
 
         </header>
 
-        {/* Error */}
+        {/* =====================================
+            ERROR
+        ====================================== */}
 
         {error && (
           <div className="error-state">
@@ -301,7 +534,9 @@ export default function TestPreview() {
           </div>
         )}
 
-        {/* Test Details */}
+        {/* =====================================
+            TEST DETAILS
+        ====================================== */}
 
         <section className="preview-card">
 
@@ -312,6 +547,7 @@ export default function TestPreview() {
           <div className="test-info-grid">
 
             <div className="info-item">
+
               <span className="info-label">
                 Name
               </span>
@@ -319,9 +555,11 @@ export default function TestPreview() {
               <span className="info-value">
                 {test.name}
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Subject
               </span>
@@ -329,9 +567,11 @@ export default function TestPreview() {
               <span className="info-value">
                 {test.subject}
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Type
               </span>
@@ -339,9 +579,11 @@ export default function TestPreview() {
               <span className="info-value">
                 {test.type}
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Difficulty
               </span>
@@ -349,9 +591,11 @@ export default function TestPreview() {
               <span className="info-value">
                 {test.difficulty}
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Questions
               </span>
@@ -359,9 +603,11 @@ export default function TestPreview() {
               <span className="info-value">
                 {questions.length}
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Total Marks
               </span>
@@ -369,9 +615,11 @@ export default function TestPreview() {
               <span className="info-value">
                 {test.total_marks}
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Time
               </span>
@@ -379,23 +627,29 @@ export default function TestPreview() {
               <span className="info-value">
                 {test.total_time} minutes
               </span>
+
             </div>
 
             <div className="info-item">
+
               <span className="info-label">
                 Status
               </span>
 
               <span className="info-value">
-                {test.status || "draft"}
+                {test.status ||
+                  "draft"}
               </span>
+
             </div>
 
           </div>
 
         </section>
 
-        {/* Questions */}
+        {/* =====================================
+            QUESTIONS
+        ====================================== */}
 
         <section className="preview-card">
 
@@ -404,88 +658,121 @@ export default function TestPreview() {
           </h2>
 
           {questions.length === 0 ? (
+
             <div className="empty-state">
               No questions have been added
               to this test.
             </div>
+
           ) : (
-            questions.map(
-              (question, index) => (
 
-                <article
-                  className="question-preview-card"
-                  key={question.id}
-                >
+            <div className="questions-list">
 
-                  <div className="question-number">
-                    Question {index + 1}
-                  </div>
+              {questions.map(
+                (
+                  question,
+                  index
+                ) => (
 
-                  <p className="question-text">
-                    {question.question}
-                  </p>
+                  <article
+                    className="question-preview-card"
+                    key={question.id}
+                  >
 
-                  <ol className="options-list">
+                    {/* QUESTION NUMBER */}
 
-                    <li>
-                      {question.option1}
-                    </li>
-
-                    <li>
-                      {question.option2}
-                    </li>
-
-                    <li>
-                      {question.option3}
-                    </li>
-
-                    <li>
-                      {question.option4}
-                    </li>
-
-                  </ol>
-
-                  <div className="correct-answer">
-                    Correct answer:{" "}
-                    <strong>
-                      {question.correct_option}
-                    </strong>
-                  </div>
-
-                  {question.explanation && (
-                    <div className="explanation">
-                      <strong>
-                        Explanation:
-                      </strong>{" "}
-                      {question.explanation}
+                    <div className="question-number">
+                      Question {index + 1}
                     </div>
-                  )}
 
-                  <div className="question-meta">
+                    {/* QUESTION */}
 
-                    <span className="meta-badge">
-                      {question.type}
-                    </span>
+                    <p className="question-text">
+                      {question.question}
+                    </p>
 
-                    {question.difficulty && (
-                      <span className="meta-badge">
-                        {question.difficulty}
-                      </span>
+                    {/* OPTIONS */}
+
+                    <ol className="options-list">
+
+                      <li>
+                        {question.option1}
+                      </li>
+
+                      <li>
+                        {question.option2}
+                      </li>
+
+                      <li>
+                        {question.option3}
+                      </li>
+
+                      <li>
+                        {question.option4}
+                      </li>
+
+                    </ol>
+
+                    {/* CORRECT ANSWER */}
+
+                    <div className="correct-answer">
+
+                      Correct answer:{" "}
+
+                      <strong>
+                        {question.correct_option}
+                      </strong>
+
+                    </div>
+
+                    {/* EXPLANATION */}
+
+                    {question.explanation && (
+                      <div className="explanation">
+
+                        <strong>
+                          Explanation:
+                        </strong>{" "}
+
+                        {question.explanation}
+
+                      </div>
                     )}
 
-                  </div>
+                    {/* META */}
 
-                </article>
+                    <div className="question-meta">
 
-              )
-            )
+                      <span className="meta-badge">
+                        {question.type}
+                      </span>
+
+                      {question.difficulty && (
+                        <span className="meta-badge">
+                          {
+                            question.difficulty
+                          }
+                        </span>
+                      )}
+
+                    </div>
+
+                  </article>
+
+                )
+              )}
+
+            </div>
+
           )}
 
         </section>
 
-        {/* Bottom Actions */}
+        {/* =====================================
+            BOTTOM ACTIONS
+        ====================================== */}
 
-        <div className="preview-actions">
+        <div className="preview-actions preview-bottom-actions">
 
           <button
             type="button"
@@ -520,7 +807,7 @@ export default function TestPreview() {
         </div>
 
       </div>
+
     </main>
   );
 }
-

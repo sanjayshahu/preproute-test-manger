@@ -23,7 +23,11 @@ function ProtectedRoute({
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
       <Route
         path="/dashboard"
@@ -33,7 +37,10 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
- <Route
+
+      {/* CREATE TEST */}
+
+      <Route
         path="/tests/create"
         element={
           <ProtectedRoute>
@@ -42,19 +49,51 @@ export default function AppRoutes() {
         }
       />
 
-       <Route
-    path="/tests/:testId/questions"
-    element={<ProtectedRoute><AddQuestions /></ProtectedRoute>}
-  />
-  <Route
-  path="/tests/:testId/preview"
-  element={<ProtectedRoute><TestPreview /></ProtectedRoute>}
-/>
+      {/* EDIT TEST */}
+
+      <Route
+        path="/tests/:testId/edit"
+        element={
+          <ProtectedRoute>
+            <CreateTest />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* QUESTIONS */}
+
+      <Route
+        path="/tests/:testId/questions"
+        element={
+          <ProtectedRoute>
+            <AddQuestions />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* PREVIEW */}
+
+      <Route
+        path="/tests/:testId/preview"
+        element={
+          <ProtectedRoute>
+            <TestPreview />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* FALLBACK */}
 
       <Route
         path="*"
-        element={<Navigate to="/dashboard" replace />}
+        element={
+          <Navigate
+            to="/dashboard"
+            replace
+          />
+        }
       />
+
     </Routes>
   );
 }

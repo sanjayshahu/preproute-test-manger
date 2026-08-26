@@ -51,3 +51,15 @@ export const getTestById = async (
   return response.data.data;
 };
 
+export const updateTest = async (
+  testId: string,
+  payload: Partial<CreateTestPayload>
+): Promise<Test> => {
+  const response = await api.put(
+    `/tests/${testId}`,
+    payload
+  );
+
+  return response.data.data;
+};
+
