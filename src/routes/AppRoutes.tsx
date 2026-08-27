@@ -5,6 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import CreateTest from "../pages/CreateTest";
 import AddQuestions from "../pages/AddQuestions";
 import TestPreview from "../pages/TestPreview";
+import TestConfirmation from "../pages/TestConfirmation";
 
 function ProtectedRoute({
   children,
@@ -78,6 +79,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <TestPreview />
+          </ProtectedRoute>
+        }
+      />
+        {/* Confirmation Screen */}
+
+      <Route
+        path="/tests/:testId/confirmation"
+        element={
+          <ProtectedRoute>
+            <TestConfirmation />
           </ProtectedRoute>
         }
       />

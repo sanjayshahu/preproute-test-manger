@@ -4,13 +4,13 @@ import {
   Pencil,
   Plus,
   Search,
-  Trash2,
 } from "lucide-react";
 
 import { getTests } from "../api/tests";
 import type { Test } from "../types/test";
 import StatusBadge from "../components/StatusBadge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
 import "./Dashboard.css";
 
@@ -79,21 +79,21 @@ export default function Dashboard() {
     (test) => test.status?.toLowerCase() === "live"
   ).length;
 
-  const handleCreateTest = () => {
-    console.log("Create test");
+
+
+  const handleView = (testId:string) => {
+      navigate(
+      `/tests/${testId}/preview`
+    );
   };
 
-  const handleView = (id: string) => {
-    console.log("View test:", id);
+  const handleEdit = (testId:string) => {
+     navigate(
+      `/tests/${testId}/edit`
+    );
   };
 
-  const handleEdit = (id: string) => {
-    console.log("Edit test:", id);
-  };
 
-  const handleDelete = (id: string) => {
-    console.log("Delete test:", id);
-  };
 
   if (loading) {
     return (
@@ -120,6 +120,7 @@ export default function Dashboard() {
   }
 
   return (
+   <AppLayout componentName="Dashboard">
     <main className="dashboard">
       <div className="dashboard-container">
 
@@ -332,7 +333,7 @@ export default function Dashboard() {
                             <Pencil size={17} />
                           </button>
 
-                          <button
+                          {/* <button
                             className="action-button delete-button"
                             title="Delete"
                             onClick={() =>
@@ -340,7 +341,7 @@ export default function Dashboard() {
                             }
                           >
                             <Trash2 size={17} />
-                          </button>
+                          </button> */}
 
                         </div>
 
@@ -361,5 +362,6 @@ export default function Dashboard() {
 
       </div>
     </main>
+    </AppLayout>
   );
 }

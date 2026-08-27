@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -37,7 +38,35 @@ import {
   getSubTopicsByTopics,
 } from "../api/topics";
 
+import AppLayout from "../components/AppLayout";
+
 import "./CreateTest.css";
+
+/**
+ * =========================================================
+ * UI -> API TYPE MAPPING
+ * =========================================================
+ */
+
+const TEST_TYPE_API_MAP: Record<string, string> = {
+  chapterwise: "chapterwise",
+  pyq: "pyq",
+  mock_test: "mock_test",
+  full_length: "full",
+};
+
+/**
+ * =========================================================
+ * BACKEND -> UI TYPE MAPPING
+ * =========================================================
+ */
+
+const TEST_TYPE_UI_MAP: Record<string, string> = {
+  chapterwise: "chapterwise",
+  pyq: "pyq",
+  mock_test: "mock_test",
+  full: "full_length",
+};
 
 export default function CreateTest() {
   const navigate = useNavigate();
@@ -48,9 +77,9 @@ export default function CreateTest() {
 
   const isEditMode = Boolean(testId);
 
-  // --------------------------------------------------
+  // ==================================================
   // API DATA
-  // --------------------------------------------------
+  // ==================================================
 
   const [subjects, setSubjects] =
     useState<Subject[]>([]);
@@ -61,9 +90,9 @@ export default function CreateTest() {
   const [subTopics, setSubTopics] =
     useState<SubTopic[]>([]);
 
-  // --------------------------------------------------
+  // ==================================================
   // LOADING
-  // --------------------------------------------------
+  // ==================================================
 
   const [loadingSubjects, setLoadingSubjects] =
     useState(false);
@@ -80,24 +109,22 @@ export default function CreateTest() {
   const [submitLoading, setSubmitLoading] =
     useState(false);
 
-  // --------------------------------------------------
+  // ==================================================
   // ERROR
-  // --------------------------------------------------
+  // ==================================================
 
   const [apiError, setApiError] =
     useState("");
 
-  // --------------------------------------------------
-  // IMPORTANT:
-  // Prevent normal subject/topic effects from
-  // interfering while edit data is being populated.
-  // --------------------------------------------------
+  // ==================================================
+  // EDIT HYDRATION
+  // ==================================================
 
   const hydratingEdit = useRef(false);
 
-  // --------------------------------------------------
+  // ==================================================
   // FORM
-  // --------------------------------------------------
+  // ==================================================
 
   const {
     register,
@@ -126,35 +153,33 @@ export default function CreateTest() {
     },
   });
 
-  // --------------------------------------------------
+  // ==================================================
   // WATCH
-  // --------------------------------------------------
+  // ==================================================
 
   const selectedSubject =
     watch("subject");
 
   const selectedTopics =
-    watch("topics");
+    watch("topics") || [];
 
-  // --------------------------------------------------
+  const selectedSubTopics =
+    watch("sub_topics") || [];
+
+  const selectedType =
+    watch("type");
+
+  // ==================================================
   // LOAD SUBJECTS
-  // --------------------------------------------------
+  // ==================================================
 
   useEffect(() => {
     loadSubjects();
   }, []);
 
-  // --------------------------------------------------
+  // ==================================================
   // EDIT MODE
-  //
-  // API returns:
-  //
-  // subject: "Political Science"
-  // topics: ["Political Theory"]
-  // sub_topics: ["Socialism"]
-  //
-  // We convert them to IDs here.
-  // --------------------------------------------------
+  // ==================================================
 
   useEffect(() => {
     if (!testId) {
@@ -164,9 +189,9 @@ export default function CreateTest() {
     hydrateEditTest(testId);
   }, [testId]);
 
-  // --------------------------------------------------
-  // NORMAL SUBJECT CHANGE
-  // --------------------------------------------------
+  // ==================================================
+  // SUBJECT CHANGE
+  // ==================================================
 
   useEffect(() => {
     if (hydratingEdit.current) {
@@ -183,15 +208,17 @@ export default function CreateTest() {
       return;
     }
 
-    loadTopicsForSubject(selectedSubject);
+    loadTopicsForSubject(
+      selectedSubject
+    );
   }, [
     selectedSubject,
     setValue,
   ]);
 
-  // --------------------------------------------------
-  // NORMAL TOPIC CHANGE
-  // --------------------------------------------------
+  // ==================================================
+  // TOPIC CHANGE
+  // ==================================================
 
   useEffect(() => {
     if (hydratingEdit.current) {
@@ -225,12 +252,8 @@ export default function CreateTest() {
       setLoadingSubjects(true);
       setApiError("");
 
-      const data = await getSubjects();
-
-      console.log(
-        "📚 SUBJECTS:",
-        data
-      );
+      const data =
+        await getSubjects();
 
       setSubjects(
         Array.isArray(data)
@@ -265,23 +288,28 @@ export default function CreateTest() {
       setTopics([]);
       setSubTopics([]);
 
-      setValue("topics", []);
-      setValue("sub_topics", []);
+      setValue(
+        "topics",
+        [],
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
+      );
 
-      console.log(
-        "📚 LOADING TOPICS FOR SUBJECT ID:",
-        subjectId
+      setValue(
+        "sub_topics",
+        [],
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
       );
 
       const data =
         await getTopicsBySubject(
           subjectId
         );
-
-      console.log(
-        "📚 TOPICS:",
-        data
-      );
 
       setTopics(
         Array.isArray(data)
@@ -316,23 +344,17 @@ export default function CreateTest() {
 
         setValue(
           "sub_topics",
-          []
-        );
-
-        console.log(
-          "📚 LOADING SUB TOPICS FOR TOPIC IDS:",
-          topicIds
+          [],
+          {
+            shouldValidate: true,
+            shouldDirty: true,
+          }
         );
 
         const data =
           await getSubTopicsByTopics(
             topicIds
           );
-
-        console.log(
-          "📚 SUB TOPICS:",
-          data
-        );
 
         setSubTopics(
           Array.isArray(data)
@@ -366,15 +388,6 @@ export default function CreateTest() {
       setLoadingTest(true);
       setApiError("");
 
-      console.log(
-        "✏️ LOADING TEST FOR EDIT:",
-        id
-      );
-
-      // ----------------------------------------------
-      // 1. GET TEST
-      // ----------------------------------------------
-
       const test =
         await getTestById(id);
 
@@ -384,7 +397,7 @@ export default function CreateTest() {
       );
 
       // ----------------------------------------------
-      // 2. LOAD SUBJECTS IF NOT ALREADY LOADED
+      // LOAD SUBJECTS
       // ----------------------------------------------
 
       let subjectList =
@@ -408,21 +421,14 @@ export default function CreateTest() {
       }
 
       // ----------------------------------------------
-      // 3. API RETURNS SUBJECT NAME
-      //
-      // Example:
-      // test.subject = "Political Science"
-      //
-      // Find:
-      // "Political Science"
-      //       ↓
-      // UUID
+      // FIND SUBJECT
       // ----------------------------------------------
 
       const subjectObject =
         subjectList.find(
           (subject) =>
-            subject.name.trim()
+            subject.name
+              .trim()
               .toLowerCase() ===
             String(
               test.subject || ""
@@ -440,18 +446,8 @@ export default function CreateTest() {
       const subjectId =
         subjectObject.id;
 
-      console.log(
-        "✅ SUBJECT NAME:",
-        test.subject
-      );
-
-      console.log(
-        "✅ SUBJECT ID:",
-        subjectId
-      );
-
       // ----------------------------------------------
-      // 4. SET BASIC TEST VALUES
+      // BASIC VALUES
       // ----------------------------------------------
 
       setValue(
@@ -464,15 +460,32 @@ export default function CreateTest() {
         subjectId
       );
 
+      // ----------------------------------------------
+      // TEST TYPE
+      // ----------------------------------------------
+
+      const uiTestType =
+        TEST_TYPE_UI_MAP[
+          String(test.type || "")
+        ] ?? "";
+
       setValue(
         "type",
-        test.type || ""
+        uiTestType
       );
+
+      // ----------------------------------------------
+      // DIFFICULTY
+      // ----------------------------------------------
 
       setValue(
         "difficulty",
         test.difficulty || ""
       );
+
+      // ----------------------------------------------
+      // MARKING SCHEME
+      // ----------------------------------------------
 
       setValue(
         "correct_marks",
@@ -495,12 +508,20 @@ export default function CreateTest() {
         )
       );
 
+      // ----------------------------------------------
+      // DURATION
+      // ----------------------------------------------
+
       setValue(
         "total_time",
         Number(
           test.total_time ?? 60
         )
       );
+
+      // ----------------------------------------------
+      // TEST LIMITS
+      // ----------------------------------------------
 
       setValue(
         "total_marks",
@@ -517,7 +538,7 @@ export default function CreateTest() {
       );
 
       // ----------------------------------------------
-      // 5. LOAD TOPICS USING SUBJECT UUID
+      // LOAD TOPICS
       // ----------------------------------------------
 
       setLoadingTopics(true);
@@ -532,25 +553,12 @@ export default function CreateTest() {
           ? topicData
           : [];
 
-      console.log(
-        "📚 TOPICS FOR EDIT:",
-        topicList
-      );
-
       setTopics(
         topicList
       );
 
       // ----------------------------------------------
-      // 6. API RETURNS TOPIC NAMES
-      //
-      // Example:
-      // ["Political Theory"]
-      //
-      // Convert:
-      // Political Theory
-      //       ↓
-      // topic UUID
+      // TOPIC NAMES -> IDS
       // ----------------------------------------------
 
       const testTopicNames =
@@ -573,16 +581,9 @@ export default function CreateTest() {
                       .toLowerCase()
                 );
 
-              if (!topic) {
-                console.warn(
-                  "⚠️ TOPIC NOT FOUND:",
-                  topicName
-                );
-
-                return null;
-              }
-
-              return topic.id;
+              return (
+                topic?.id ?? null
+              );
             }
           )
           .filter(
@@ -592,16 +593,6 @@ export default function CreateTest() {
               Boolean(id)
           );
 
-      console.log(
-        "✅ TEST TOPIC NAMES:",
-        testTopicNames
-      );
-
-      console.log(
-        "✅ TEST TOPIC IDS:",
-        selectedTopicIds
-      );
-
       setValue(
         "topics",
         selectedTopicIds
@@ -610,7 +601,7 @@ export default function CreateTest() {
       setLoadingTopics(false);
 
       // ----------------------------------------------
-      // 7. LOAD SUB TOPICS USING TOPIC UUIDS
+      // LOAD SUB TOPICS
       // ----------------------------------------------
 
       let subTopicList:
@@ -633,11 +624,6 @@ export default function CreateTest() {
             ? subTopicData
             : [];
 
-        console.log(
-          "📚 SUB TOPICS FOR EDIT:",
-          subTopicList
-        );
-
         setSubTopics(
           subTopicList
         );
@@ -646,15 +632,7 @@ export default function CreateTest() {
       }
 
       // ----------------------------------------------
-      // 8. API RETURNS SUB-TOPIC NAMES
-      //
-      // Example:
-      // ["Socialism"]
-      //
-      // Convert:
-      // Socialism
-      //    ↓
-      // sub-topic UUID
+      // SUB TOPIC NAMES -> IDS
       // ----------------------------------------------
 
       const testSubTopicNames =
@@ -683,16 +661,9 @@ export default function CreateTest() {
                       .toLowerCase()
                 );
 
-              if (!subTopic) {
-                console.warn(
-                  "⚠️ SUB TOPIC NOT FOUND:",
-                  subTopicName
-                );
-
-                return null;
-              }
-
-              return subTopic.id;
+              return (
+                subTopic?.id ?? null
+              );
             }
           )
           .filter(
@@ -701,16 +672,6 @@ export default function CreateTest() {
             ): id is string =>
               Boolean(id)
           );
-
-      console.log(
-        "✅ TEST SUB TOPIC NAMES:",
-        testSubTopicNames
-      );
-
-      console.log(
-        "✅ TEST SUB TOPIC IDS:",
-        selectedSubTopicIds
-      );
 
       setValue(
         "sub_topics",
@@ -723,6 +684,7 @@ export default function CreateTest() {
           subjectId,
           selectedTopicIds,
           selectedSubTopicIds,
+          uiTestType,
         }
       );
     } catch (error: any) {
@@ -746,13 +708,52 @@ export default function CreateTest() {
       setLoadingTopics(false);
       setLoadingSubTopics(false);
 
-      // ----------------------------------------------
-      // VERY IMPORTANT:
-      // Allow normal user changes now.
-      // ----------------------------------------------
-
       hydratingEdit.current = false;
     }
+  };
+
+  // ==================================================
+  // TOPIC DROPDOWN CHANGE
+  // ==================================================
+
+  const handleTopicChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const topicId =
+      event.target.value;
+
+    setValue(
+      "topics",
+      topicId
+        ? [topicId]
+        : [],
+      {
+        shouldValidate: true,
+        shouldDirty: true,
+      }
+    );
+  };
+
+  // ==================================================
+  // SUB TOPIC DROPDOWN CHANGE
+  // ==================================================
+
+  const handleSubTopicChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const subTopicId =
+      event.target.value;
+
+    setValue(
+      "sub_topics",
+      subTopicId
+        ? [subTopicId]
+        : [],
+      {
+        shouldValidate: true,
+        shouldDirty: true,
+      }
+    );
   };
 
   // ==================================================
@@ -760,179 +761,186 @@ export default function CreateTest() {
   // ==================================================
 
   const onSubmit = async (
-  data: TestFormValues
-) => {
-  console.log(
-    "🔥 SUBMIT HANDLER FIRED"
-  );
-
-  console.log(
-    "📝 FORM DATA:",
-    data
-  );
-
-  setSubmitLoading(true);
-  setApiError("");
-
-  try {
-    /*
-     * IMPORTANT:
-     *
-     * The UI uses "full_length", but the
-     * database does not accept that value.
-     *
-     * Convert the frontend value to the
-     * backend/database value here.
-     */
-    const testType =
-      data.type === "full_length"
-        ? "full"
-        : data.type;
-
-    const payload: CreateTestPayload = {
-      name:
-        data.name.trim(),
-
-      type:
-        testType,
-
-      subject:
-        data.subject,
-
-      topics:
-        data.topics,
-
-      sub_topics:
-        data.sub_topics,
-
-      correct_marks:
-        Number(
-          data.correct_marks
-        ),
-
-      wrong_marks:
-        Number(
-          data.wrong_marks
-        ),
-
-      unattempt_marks:
-        Number(
-          data.unattempt_marks
-        ),
-
-      difficulty:
-        data.difficulty,
-
-      total_time:
-        Number(
-          data.total_time
-        ),
-
-      total_marks:
-        Number(
-          data.total_marks
-        ),
-
-      total_questions:
-        Number(
-          data.total_questions
-        ),
-
-      status:
-        "draft",
-    };
-
+    data: TestFormValues
+  ) => {
     console.log(
-      "📦 FINAL CREATE/UPDATE PAYLOAD:",
-      payload
+      "🔥 SUBMIT HANDLER FIRED"
     );
 
-    // ----------------------------------------------
-    // EDIT
-    // ----------------------------------------------
+    console.log(
+      "📝 FORM DATA:",
+      data
+    );
 
-    if (isEditMode && testId) {
+    setSubmitLoading(true);
+    setApiError("");
+
+    try {
+      // ----------------------------------------------
+      // UI -> API TYPE
+      // ----------------------------------------------
+
+      const testType =
+        TEST_TYPE_API_MAP[
+          data.type
+        ];
+
+      if (!testType) {
+        throw new Error(
+          `Invalid test type: ${data.type}`
+        );
+      }
+
+      // ----------------------------------------------
+      // PAYLOAD
+      // ----------------------------------------------
+
+      const payload: CreateTestPayload = {
+        name:
+          data.name.trim(),
+
+        type:
+          testType,
+
+        subject:
+          data.subject,
+
+        topics:
+          data.topics,
+
+        sub_topics:
+          data.sub_topics,
+
+        correct_marks:
+          Number(
+            data.correct_marks
+          ),
+
+        wrong_marks:
+          Number(
+            data.wrong_marks
+          ),
+
+        unattempt_marks:
+          Number(
+            data.unattempt_marks
+          ),
+
+        difficulty:
+          data.difficulty,
+
+        total_time:
+          Number(
+            data.total_time
+          ),
+
+        total_marks:
+          Number(
+            data.total_marks
+          ),
+
+        total_questions:
+          Number(
+            data.total_questions
+          ),
+
+        status:
+          "draft",
+      };
+
       console.log(
-        "✏️ UPDATING TEST:",
-        testId
+        "📦 FINAL API PAYLOAD:",
+        payload
       );
 
-      const updatedTest =
-        await updateTest(
-          testId,
+      // ----------------------------------------------
+      // EDIT
+      // ----------------------------------------------
+
+      if (
+        isEditMode &&
+        testId
+      ) {
+        console.log(
+          "✏️ UPDATING TEST:",
+          testId
+        );
+
+        const updatedTest =
+          await updateTest(
+            testId,
+            payload
+          );
+
+        console.log(
+          "✅ UPDATED TEST:",
+          updatedTest
+        );
+
+        sessionStorage.setItem(
+          "currentTestId",
+          testId
+        );
+
+        navigate(
+          `/tests/${testId}/confirmation`
+        );
+
+        return;
+      }
+
+      // ----------------------------------------------
+      // CREATE
+      // ----------------------------------------------
+
+      console.log(
+        "🚀 CREATING TEST"
+      );
+
+      const test =
+        await createTest(
           payload
         );
 
       console.log(
-        "✅ UPDATED TEST:",
-        updatedTest
+        "✅ CREATED TEST:",
+        test
       );
+
+      if (!test?.id) {
+        throw new Error(
+          "Test created but test ID was not returned."
+        );
+      }
 
       sessionStorage.setItem(
         "currentTestId",
-        testId
+        test.id
       );
 
       navigate(
-        `/tests/${testId}/preview`
+        `/tests/${test.id}/questions`
+      );
+    } catch (error: any) {
+      console.error(
+        "❌ SAVE TEST ERROR:",
+        error
       );
 
-      return;
+      console.error(
+        "SERVER RESPONSE:",
+        error?.response?.data
+      );
+
+      setApiError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to save test. Please try again."
+      );
+    } finally {
+      setSubmitLoading(false);
     }
-
-    // ----------------------------------------------
-    // CREATE
-    // ----------------------------------------------
-
-    console.log(
-      "🚀 CREATING TEST"
-    );
-
-    const test =
-      await createTest(
-        payload
-      );
-
-    console.log(
-      "✅ CREATED TEST:",
-      test
-    );
-
-    if (!test?.id) {
-      throw new Error(
-        "Test created but test ID was not returned."
-      );
-    }
-
-    sessionStorage.setItem(
-      "currentTestId",
-      test.id
-    );
-
-    navigate(
-      `/tests/${test.id}/questions`
-    );
-
-  } catch (error: any) {
-    console.error(
-      "❌ SAVE TEST ERROR:",
-      error
-    );
-
-    console.error(
-      "SERVER RESPONSE:",
-      error?.response?.data
-    );
-
-    setApiError(
-      error?.response?.data?.message ||
-        "Failed to save test. Please try again."
-    );
-
-  } finally {
-    setSubmitLoading(false);
-  }
-};
+  };
 
   // ==================================================
   // VALIDATION ERROR
@@ -956,13 +964,15 @@ export default function CreateTest() {
     loadingTest
   ) {
     return (
-      <main className="create-test-page">
-        <div className="create-test-container">
-          <div className="loading-state">
-            Loading test...
+      <AppLayout componentName="CreateTest">
+        <main className="create-test-page">
+          <div className="create-test-container">
+            <div className="loading-state">
+              Loading test...
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </AppLayout>
     );
   }
 
@@ -971,127 +981,59 @@ export default function CreateTest() {
   // ==================================================
 
   return (
-    <main className="create-test-page">
-      <div className="create-test-container">
+    <AppLayout componentName="CreateTest">
+      <main className="create-test-page">
+        <div className="create-test-container">
 
-        {/* HEADER */}
+          {/* ==========================================
+              HEADER
+          ========================================== */}
 
-        <div className="create-test-header">
-          <div>
-            <h1>
-              {isEditMode
-                ? "Edit Test"
-                : "Create New Test"}
-            </h1>
+          <header className="create-test-header">
+            <div>
+              <h1>
+                {isEditMode
+                  ? "Edit Test"
+                  : "Create New Test"}
+              </h1>
 
-            <p>
-              {isEditMode
-                ? "Update test details before managing questions."
-                : "Add test details before adding questions."}
-            </p>
-          </div>
-        </div>
+              <p>
+                {isEditMode
+                  ? "Update test details before managing questions."
+                  : "Add test details before adding questions."}
+              </p>
+            </div>
+          </header>
 
-        {/* ERROR */}
+          {/* ==========================================
+              API ERROR
+          ========================================== */}
 
-        {apiError && (
-          <div className="api-error">
-            {apiError}
-          </div>
-        )}
-
-        {/* FORM */}
-
-        <form
-          onSubmit={handleSubmit(
-            onSubmit,
-            onValidationError
+          {apiError && (
+            <div
+              className="api-error"
+              role="alert"
+            >
+              {apiError}
+            </div>
           )}
-        >
 
-          {/* =========================
-              BASIC INFORMATION
-          ========================== */}
+          {/* ==========================================
+              FORM
+          ========================================== */}
 
-          <section className="form-card">
+          <form
+            onSubmit={handleSubmit(
+              onSubmit,
+              onValidationError
+            )}
+          >
 
-            <h2>
-              Basic Information
-            </h2>
+            {/* =================================================
+                ROW 1 — TEST TYPE
+            ================================================= */}
 
-            <div className="form-grid">
-
-              {/* TEST NAME */}
-
-              <div className="form-field full">
-
-                <label>
-                  Test Name
-                </label>
-
-                <input
-                  {...register("name")}
-                  placeholder="Enter test name"
-                />
-
-                {errors.name && (
-                  <span className="field-error">
-                    {
-                      errors.name.message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-              {/* SUBJECT */}
-
-              <div className="form-field">
-
-                <label>
-                  Subject
-                </label>
-
-                <select
-                  {...register("subject")}
-                  disabled={
-                    loadingSubjects ||
-                    loadingTest
-                  }
-                >
-
-                  <option value="">
-                    {loadingSubjects
-                      ? "Loading subjects..."
-                      : "Select subject"}
-                  </option>
-
-                  {subjects.map(
-                    (subject) => (
-                      <option
-                        key={subject.id}
-                        value={subject.id}
-                      >
-                        {subject.name}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-                {errors.subject && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .subject
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-              {/* TEST TYPE */}
+            <section className="form-card">
 
               <div className="form-field">
 
@@ -1099,477 +1041,690 @@ export default function CreateTest() {
                   Test Type
                 </label>
 
-                <select
-                  {...register("type")}
-                >
+                <div className="test-type-options">
 
-                  <option value="">
-                    Select test type
-                  </option>
+                  {/* CHAPTERWISE */}
 
-                  <option value="chapterwise">
-                    Chapterwise
-                  </option>
+                  <label
+                    className={`test-type-badge ${
+                      selectedType ===
+                      "chapterwise"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="chapterwise"
+                      {...register(
+                        "type"
+                      )}
+                    />
 
-                  <option value="full_length">
-                    Full Length
-                  </option>
+                    <span>
+                      Chapterwise
+                    </span>
+                  </label>
 
-                </select>
+                  {/* PYQ */}
+
+                  <label
+                    className={`test-type-badge ${
+                      selectedType ===
+                      "pyq"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="pyq"
+                      {...register(
+                        "type"
+                      )}
+                    />
+
+                    <span>
+                      PYQ
+                    </span>
+                  </label>
+
+                  {/* MOCK TEST */}
+
+                  <label
+                    className={`test-type-badge ${
+                      selectedType ===
+                      "mock_test"
+                        ? "active"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      value="mock_test"
+                      {...register(
+                        "type"
+                      )}
+                    />
+
+                    <span>
+                      Mock Test
+                    </span>
+                  </label>
+
+                </div>
 
                 {errors.type && (
                   <span className="field-error">
                     {
-                      errors
-                        .type
-                        .message
+                      errors.type.message
                     }
                   </span>
                 )}
 
               </div>
 
-            </div>
+            </section>
 
-          </section>
+            {/* =================================================
+                ROW 2 — SUBJECT + NAME OF TEST
+            ================================================= */}
 
-          {/* =========================
-              TOPICS
-          ========================== */}
+            <section className="form-card">
 
-          <section className="form-card">
+              <div className="form-grid">
 
-            <h2>
-              Topics
-            </h2>
+                {/* SUBJECT */}
 
-            <p className="section-description">
-              Select the topics for this test.
-            </p>
+                <div className="form-field">
 
-            {loadingTopics && (
-              <p>
-                Loading topics...
-              </p>
-            )}
+                  <label>
+                    Subject
+                  </label>
 
-            {!loadingTopics &&
-              topics.length === 0 && (
-                <p className="muted">
-                  Select a subject first.
-                </p>
-              )}
-
-            <div className="checkbox-grid">
-
-              {topics.map(
-                (topic) => (
-                  <label
-                    className="checkbox-item"
-                    key={topic.id}
+                  <select
+                    {...register(
+                      "subject"
+                    )}
+                    disabled={
+                      loadingSubjects ||
+                      loadingTest
+                    }
                   >
+                    <option
+                      value=""
+                      disabled
+                    >
+                      {loadingSubjects
+                        ? "Loading subjects..."
+                        : "Choose from Drop-down"}
+                    </option>
+
+                    {subjects.map(
+                      (subject) => (
+                        <option
+                          key={
+                            subject.id
+                          }
+                          value={
+                            subject.id
+                          }
+                        >
+                          {subject.name}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                  {errors.subject && (
+                    <span className="field-error">
+                      {
+                        errors.subject
+                          .message
+                      }
+                    </span>
+                  )}
+
+                </div>
+
+                {/* NAME */}
+
+                <div className="form-field">
+
+                  <label>
+                    Name of Test
+                  </label>
+
+                  <input
+                    type="text"
+                    {...register(
+                      "name"
+                    )}
+                    placeholder="Enter name of Test"
+                  />
+
+                  {errors.name && (
+                    <span className="field-error">
+                      {
+                        errors.name
+                          .message
+                      }
+                    </span>
+                  )}
+
+                </div>
+
+              </div>
+
+            </section>
+
+            {/* =================================================
+                ROW 3 — TOPIC + SUB TOPIC
+            ================================================= */}
+
+            <section className="form-card">
+
+              <div className="form-grid">
+
+                {/* TOPIC */}
+
+                <div className="form-field">
+
+                  <label>
+                    Topic
+                  </label>
+
+                  <select
+                    value={
+                      selectedTopics[0] ||
+                      ""
+                    }
+                    onChange={
+                      handleTopicChange
+                    }
+                    disabled={
+                      loadingTopics ||
+                      !selectedSubject
+                    }
+                  >
+                    <option
+                      value=""
+                      disabled
+                    >
+                      {loadingTopics
+                        ? "Loading topics..."
+                        : !selectedSubject
+                          ? "Select a subject first"
+                          : "Choose from Drop-down"}
+                    </option>
+
+                    {topics.map(
+                      (topic) => (
+                        <option
+                          key={
+                            topic.id
+                          }
+                          value={
+                            topic.id
+                          }
+                        >
+                          {topic.name}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                  {errors.topics && (
+                    <span className="field-error">
+                      {
+                        errors.topics
+                          .message
+                      }
+                    </span>
+                  )}
+
+                </div>
+
+                {/* SUB TOPIC */}
+
+                <div className="form-field">
+
+                  <label>
+                    Sub Topic
+                  </label>
+
+                  <select
+                    value={
+                      selectedSubTopics[0] ||
+                      ""
+                    }
+                    onChange={
+                      handleSubTopicChange
+                    }
+                    disabled={
+                      loadingSubTopics ||
+                      selectedTopics.length ===
+                        0
+                    }
+                  >
+                    <option
+                      value=""
+                      disabled
+                    >
+                      {loadingSubTopics
+                        ? "Loading sub-topics..."
+                        : selectedTopics.length ===
+                            0
+                          ? "Select a topic first"
+                          : "Choose from Drop-down"}
+                    </option>
+
+                    {subTopics.map(
+                      (
+                        subTopic
+                      ) => (
+                        <option
+                          key={
+                            subTopic.id
+                          }
+                          value={
+                            subTopic.id
+                          }
+                        >
+                          {
+                            subTopic.name
+                          }
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                  {errors.sub_topics && (
+                    <span className="field-error">
+                      {
+                        errors
+                          .sub_topics
+                          .message
+                      }
+                    </span>
+                  )}
+
+                </div>
+
+              </div>
+
+            </section>
+
+            {/* =================================================
+                ROW 4 — DURATION + DIFFICULTY
+            ================================================= */}
+
+            <section className="form-card">
+
+              <div className="form-grid">
+
+                {/* DURATION */}
+
+                <div className="form-field">
+
+                  <label>
+                    Duration (Minutes)
+                  </label>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    {...register(
+                      "total_time",
+                      {
+                        setValueAs: (
+                          value
+                        ) =>
+                          value === ""
+                            ? undefined
+                            : Number(
+                                value
+                              ),
+                      }
+                    )}
+                    placeholder="Enter the time"
+                  />
+
+                  {errors.total_time && (
+                    <span className="field-error">
+                      {
+                        errors.total_time
+                          .message
+                      }
+                    </span>
+                  )}
+
+                </div>
+
+                {/* DIFFICULTY */}
+
+                <div className="form-field">
+
+                  <label>
+                    Test Difficulty Level
+                  </label>
+
+                  <div className="difficulty-options">
+
+                    {/* EASY */}
+
+                    <label className="difficulty-option">
+
+                      <input
+                        type="radio"
+                        value="easy"
+                        {...register(
+                          "difficulty"
+                        )}
+                      />
+
+                      <span>
+                        Easy
+                      </span>
+
+                    </label>
+
+                    {/* MEDIUM */}
+
+                    <label className="difficulty-option">
+
+                      <input
+                        type="radio"
+                        value="medium"
+                        {...register(
+                          "difficulty"
+                        )}
+                      />
+
+                      <span>
+                        Medium
+                      </span>
+
+                    </label>
+
+                    {/* DIFFICULT */}
+
+                    <label className="difficulty-option">
+
+                      <input
+                        type="radio"
+                        value="hard"
+                        {...register(
+                          "difficulty"
+                        )}
+                      />
+
+                      <span>
+                        Difficult
+                      </span>
+
+                    </label>
+
+                  </div>
+
+                  {errors.difficulty && (
+                    <span className="field-error">
+                      {
+                        errors
+                          .difficulty
+                          .message
+                      }
+                    </span>
+                  )}
+
+                </div>
+
+              </div>
+
+            </section>
+
+            {/* =================================================
+                ROW 5 — MARKING SCHEME
+            ================================================= */}
+
+            <section className="form-card">
+
+              <div className="marking-scheme-section">
+
+                <h2>
+                  Marking Scheme
+                </h2>
+
+                <div className="marking-grid">
+
+                  {/* WRONG ANSWER */}
+
+                  <div className="form-field marking-field">
+
+                    <label>
+                      Wrong Answer
+                    </label>
 
                     <input
-                      type="checkbox"
-                      value={topic.id}
+                      type="number"
+                      step="0.5"
                       {...register(
-                        "topics"
+                        "wrong_marks",
+                        {
+                          valueAsNumber:
+                            true,
+                        }
                       )}
+                      placeholder="-1"
                     />
 
-                    <span>
-                      {topic.name}
-                    </span>
+                    {errors.wrong_marks && (
+                      <span className="field-error">
+                        {
+                          errors
+                            .wrong_marks
+                            .message
+                        }
+                      </span>
+                    )}
 
-                  </label>
-                )
-              )}
+                  </div>
 
-            </div>
+                  {/* UNATTEMPTED */}
 
-            {errors.topics && (
-              <span className="field-error">
-                {
-                  errors
-                    .topics
-                    .message
-                }
-              </span>
-            )}
+                  <div className="form-field marking-field">
 
-          </section>
-
-          {/* =========================
-              SUB TOPICS
-          ========================== */}
-
-          <section className="form-card">
-
-            <h2>
-              Sub-topics
-            </h2>
-
-            <p className="section-description">
-              Select the sub-topics.
-            </p>
-
-            {loadingSubTopics && (
-              <p>
-                Loading sub-topics...
-              </p>
-            )}
-
-            {!loadingSubTopics &&
-              subTopics.length === 0 && (
-                <p className="muted">
-                  Select topics first.
-                </p>
-              )}
-
-            <div className="checkbox-grid">
-
-              {subTopics.map(
-                (subTopic) => (
-                  <label
-                    className="checkbox-item"
-                    key={subTopic.id}
-                  >
+                    <label>
+                      Unattempted
+                    </label>
 
                     <input
-                      type="checkbox"
-                      value={subTopic.id}
+                      type="number"
+                      step="0.5"
                       {...register(
-                        "sub_topics"
+                        "unattempt_marks",
+                        {
+                          valueAsNumber:
+                            true,
+                        }
                       )}
+                      placeholder="+0"
                     />
 
-                    <span>
-                      {subTopic.name}
-                    </span>
+                    {errors.unattempt_marks && (
+                      <span className="field-error">
+                        {
+                          errors
+                            .unattempt_marks
+                            .message
+                        }
+                      </span>
+                    )}
 
-                  </label>
-                )
-              )}
+                  </div>
 
-            </div>
+                  {/* CORRECT ANSWER */}
 
-            {errors.sub_topics && (
-              <span className="field-error">
-                {
-                  errors
-                    .sub_topics
-                    .message
+                  <div className="form-field marking-field">
+
+                    <label>
+                      Correct Answer
+                    </label>
+
+                    <input
+                      type="number"
+                      step="0.5"
+                      {...register(
+                        "correct_marks",
+                        {
+                          valueAsNumber:
+                            true,
+                        }
+                      )}
+                      placeholder="+5"
+                    />
+
+                    {errors.correct_marks && (
+                      <span className="field-error">
+                        {
+                          errors
+                            .correct_marks
+                            .message
+                        }
+                      </span>
+                    )}
+
+                  </div>
+
+                  {/* NO OF QUESTIONS */}
+
+                  <div className="form-field marking-field">
+
+                    <label>
+                      No of Questions
+                    </label>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      {...register(
+                        "total_questions",
+                        {
+                          setValueAs: (
+                            value
+                          ) =>
+                            value === ""
+                              ? undefined
+                              : Number(
+                                  value
+                                ),
+                        }
+                      )}
+                      placeholder="Ex: 25 Marks"
+                    />
+
+                    {errors.total_questions && (
+                      <span className="field-error">
+                        {
+                          errors
+                            .total_questions
+                            .message
+                        }
+                      </span>
+                    )}
+
+                  </div>
+
+                  {/* TOTAL MARKS */}
+
+                  <div className="form-field marking-field">
+
+                    <label>
+                      Total Marks
+                    </label>
+
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      {...register(
+                        "total_marks",
+                        {
+                          setValueAs: (
+                            value
+                          ) =>
+                            value === ""
+                              ? undefined
+                              : Number(
+                                  value
+                                ),
+                        }
+                      )}
+                      placeholder="Ex: 250 Marks"
+                    />
+
+                    {errors.total_marks && (
+                      <span className="field-error">
+                        {
+                          errors
+                            .total_marks
+                            .message
+                        }
+                      </span>
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </section>
+
+            {/* =================================================
+                ACTIONS
+            ================================================= */}
+
+            <div className="form-actions">
+
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() =>
+                  navigate(
+                    isEditMode &&
+                    testId
+                      ? `/tests/${testId}/preview`
+                      : "/dashboard"
+                  )
                 }
-              </span>
-            )}
+              >
+                Cancel
+              </button>
 
-          </section>
-
-          {/* =========================
-              DIFFICULTY
-          ========================== */}
-
-          <section className="form-card">
-
-            <h2>
-              Test Configuration
-            </h2>
-
-            <div className="form-grid">
-
-              <div className="form-field">
-
-                <label>
-                  Difficulty
-                </label>
-
-                <select
-                  {...register(
-                    "difficulty"
-                  )}
-                >
-
-                  <option value="">
-                    Select difficulty
-                  </option>
-
-                  <option value="easy">
-                    Easy
-                  </option>
-
-                  <option value="medium">
-                    Medium
-                  </option>
-
-                  <option value="hard">
-                    Hard
-                  </option>
-
-                </select>
-
-                {errors.difficulty && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .difficulty
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={
+                  submitLoading ||
+                  loadingTest
+                }
+              >
+                {submitLoading
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Creating..."
+                  : isEditMode
+                    ? "Save"
+                    : "Next"}
+              </button>
 
             </div>
 
-          </section>
+          </form>
 
-          {/* =========================
-              MARKING SCHEME
-          ========================== */}
-
-          <section className="form-card">
-
-            <h2>
-              Marking Scheme
-            </h2>
-
-            <div className="form-grid">
-
-              <div className="form-field">
-
-                <label>
-                  Correct Marks
-                </label>
-
-                <input
-                  type="number"
-                  {...register(
-                    "correct_marks",
-                    {
-                      valueAsNumber: true,
-                    }
-                  )}
-                />
-
-                {errors.correct_marks && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .correct_marks
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Wrong Marks
-                </label>
-
-                <input
-                  type="number"
-                  step="0.5"
-                  {...register(
-                    "wrong_marks",
-                    {
-                      valueAsNumber: true,
-                    }
-                  )}
-                />
-
-                {errors.wrong_marks && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .wrong_marks
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Unattempt Marks
-                </label>
-
-                <input
-                  type="number"
-                  {...register(
-                    "unattempt_marks",
-                    {
-                      valueAsNumber: true,
-                    }
-                  )}
-                />
-
-                {errors.unattempt_marks && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .unattempt_marks
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-            </div>
-
-          </section>
-
-          {/* =========================
-              TEST LIMITS
-          ========================== */}
-
-          <section className="form-card">
-
-            <h2>
-              Test Limits
-            </h2>
-
-            <div className="form-grid">
-
-              <div className="form-field">
-
-                <label>
-                  Total Time
-                  <span>
-                    {" "}
-                    (minutes)
-                  </span>
-                </label>
-
-                <input
-                  type="number"
-                  {...register(
-                    "total_time",
-                    {
-                      valueAsNumber: true,
-                    }
-                  )}
-                />
-
-                {errors.total_time && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .total_time
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Total Marks
-                </label>
-
-                <input
-                  type="number"
-                  {...register(
-                    "total_marks",
-                    {
-                      valueAsNumber: true,
-                    }
-                  )}
-                />
-
-                {errors.total_marks && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .total_marks
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Total Questions
-                </label>
-
-                <input
-                  type="number"
-                  {...register(
-                    "total_questions",
-                    {
-                      valueAsNumber: true,
-                    }
-                  )}
-                />
-
-                {errors.total_questions && (
-                  <span className="field-error">
-                    {
-                      errors
-                        .total_questions
-                        .message
-                    }
-                  </span>
-                )}
-
-              </div>
-
-            </div>
-
-          </section>
-
-          {/* =========================
-              ACTIONS
-          ========================== */}
-
-          <div className="form-actions">
-
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() =>
-                navigate(
-                  isEditMode && testId
-                    ? `/tests/${testId}/preview`
-                    : "/dashboard"
-                )
-              }
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="primary-button"
-              disabled={
-                submitLoading ||
-                loadingTest
-              }
-            >
-              {submitLoading
-                ? isEditMode
-                  ? "Updating..."
-                  : "Creating..."
-                : isEditMode
-                  ? "Update Test"
-                  : "Save & Add Questions"}
-            </button>
-
-          </div>
-
-        </form>
-
-      </div>
-    </main>
+        </div>
+      </main>
+    </AppLayout>
   );
 }
+

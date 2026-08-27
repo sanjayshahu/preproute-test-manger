@@ -1,224 +1,992 @@
-```css
+/* =========================================================
+   TEST PREVIEW
+   ========================================================= */
+
 .test-preview-page {
   min-height: 100vh;
-  background: #f5f7fb;
-  padding: 32px 20px;
+  background: #f7f8fc;
+  padding: 0;
+  color: #252b3a;
 }
 
 .test-preview-container {
-  max-width: 1100px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 28px 32px 40px;
+  box-sizing: border-box;
 }
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .test-preview-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 24px;
+  align-items: center;
+  gap: 24px;
+
+  padding: 0 0 22px;
+  margin-bottom: 4px;
+
+  border-bottom: 1px solid #e8ebf2;
 }
 
-.test-preview-header h1 {
-  margin: 0 0 8px;
-  font-size: 30px;
-  color: #111827;
+.test-preview-title h1 {
+  margin: 0 0 5px;
+
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+
+  color: #202534;
+  letter-spacing: -0.01em;
 }
 
 .test-preview-header p {
   margin: 0;
-  color: #6b7280;
+
+  font-size: 12px;
+  line-height: 18px;
+
+  color: #8a91a3;
 }
+
+
+/* =========================================================
+   ACTION BUTTON GROUP
+   ========================================================= */
 
 .preview-actions {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.primary-button,
+.secondary-button {
+  width: 200px;
+  height: 48px;
+  gap: 20px;
+
+  border-radius: 6px;
+  padding: 0 14px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  box-sizing: border-box;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
+}
+
+.primary-button:active,
+.secondary-button:active {
+  transform: translateY(1px);
+}
+
+
+/* =========================================================
+   PRIMARY BUTTON
+   ========================================================= */
+
+.primary-button {
+  border: 1px solid #687cf5;
+  background: #687cf5;
+  color: #ffffff;
+
+  box-shadow: 0 1px 2px rgba(70, 85, 170, 0.12);
+}
+
+.primary-button:hover {
+  background: #5d72ed;
+  border-color: #5d72ed;
+}
+
+.primary-button:disabled {
+  background: #c7cdf3;
+  border-color: #c7cdf3;
+  color: #ffffff;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   SECONDARY BUTTON
+   ========================================================= */
+
+.secondary-button {
+  border: 1px solid #7489ff;
+  background-color: #7489ff;
+  color: #ffffff;
+
+  box-shadow: 0 1px 2px rgba(70, 85, 170, 0.12);
+}
+
+.secondary-button:hover {
+  background-color: #687cf5;
+  border-color: #687cf5;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.error-state {
+  padding: 11px 14px;
+  margin: 16px 0;
+
+  border: 1px solid #f2caca;
+  border-radius: 6px;
+
+  background: #fff7f7;
+  color: #c44949;
+
+  font-size: 12px;
+  line-height: 18px;
+}
+
+
+/* =========================================================
+   GENERAL CARDS
+   ========================================================= */
+
 .preview-card {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  border: 1px solid #e5e8ef;
+  border-radius: 7px;
+
+  padding: 20px;
+  margin-bottom: 16px;
+
+  box-shadow: 0 1px 3px rgba(24, 31, 50, 0.025);
+
+  box-sizing: border-box;
 }
 
 .preview-card h2 {
-  margin: 0 0 20px;
-  font-size: 20px;
-  color: #111827;
-}
+  display: flex;
+  align-items: center;
 
-.test-info-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
+  margin: 0 0 18px;
 
-.info-item {
-  padding: 14px;
-  background: #f9fafb;
-  border-radius: 8px;
-}
-
-.info-label {
-  display: block;
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.info-value {
-  display: block;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
-  color: #111827;
+
+  color: #303646;
 }
+
+
+/* =========================================================
+   TEST DETAILS - FIGMA
+   ========================================================= */
+
+.test-details-card {
+  position: relative;
+
+  min-height: 140px;
+
+  padding: 14px 16px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e8ef;
+  border-radius: 7px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TEST DETAILS TOP
+   ========================================================= */
+
+.test-details-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  width: 100%;
+}
+
+.test-details-main {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+/* =========================================================
+   TEST TYPE BADGE
+   ========================================================= */
+
+.test-type-badge {
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+  height: 16px;
+
+  padding: 0 8px;
+
+  border-radius: 999px;
+
+  background: #080d55;
+  color: #ffffff;
+
+  font-size: 8px;
+  line-height: 16px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   TEST TITLE
+   ========================================================= */
+
+.test-title-row {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.chapter-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 14px;
+  height: 14px;
+
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.test-name {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+
+  color: #252b3a;
+}
+
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 16px;
+
+  padding: 0 10px;
+
+  border-radius: 999px;
+
+  background: #21b5ad;
+  color: #ffffff;
+
+  font-size: 8px;
+  line-height: 16px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   EDIT ICON
+   ========================================================= */
+
+.test-edit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: #7489ff;
+
+  font-size: 17px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.test-edit-button:hover {
+  color: #687cf5;
+  transform: scale(1.05);
+}
+
+.test-edit-button:focus-visible {
+  outline: 2px solid #aeb9ff;
+  outline-offset: 2px;
+
+  border-radius: 4px;
+}
+
+
+/* =========================================================
+   TEST INFORMATION
+   ========================================================= */
+
+.test-details-info {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin-top: 9px;
+}
+
+.test-detail-row {
+  display: flex;
+  align-items: center;
+
+  min-height: 15px;
+}
+
+.test-detail-label {
+  width: 62px;
+
+  color: #7f8798;
+
+  font-size: 8px;
+  line-height: 15px;
+  font-weight: 400;
+
+  flex-shrink: 0;
+}
+
+.test-detail-separator {
+  width: 9px;
+
+  color: #a3a9b6;
+
+  font-size: 8px;
+  line-height: 15px;
+
+  flex-shrink: 0;
+}
+
+.test-detail-value {
+  color: #4b5364;
+
+  font-size: 8px;
+  line-height: 15px;
+  font-weight: 400;
+}
+
+
+/* =========================================================
+   TOPIC / SUB TOPIC
+   ========================================================= */
+
+.topic-value {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 16px;
+
+  padding: 0 7px;
+
+  border: 1px solid #f0c45c;
+  border-radius: 5px;
+
+  color: #e2a928;
+
+  font-size: 8px;
+  line-height: 14px;
+}
+
+
+/* =========================================================
+   TEST STATISTICS
+   ========================================================= */
+
+.test-statistics {
+  position: absolute;
+
+  right: 16px;
+  bottom: 10px;
+
+  display: flex;
+  align-items: center;
+
+  height: 20px;
+
+  padding: 0 5px;
+
+  border: 1px solid #edf0f5;
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.test-stat {
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  padding: 0 7px;
+
+  color: #626a7b;
+
+  font-size: 8px;
+  line-height: 18px;
+  font-weight: 400;
+
+  white-space: nowrap;
+}
+
+.stat-icon {
+  color: #8a91a3;
+
+  font-size: 8px;
+  line-height: 1;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 11px;
+
+  background: #e7eaf0;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   QUESTIONS LIST
+   ========================================================= */
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+
+/* =========================================================
+   QUESTION CARD
+   ========================================================= */
 
 .question-preview-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 16px;
+  position: relative;
+
+  border: 1px solid #e5e8ef;
+  border-radius: 6px;
+
+  padding: 17px 18px;
+
+  background: #ffffff;
+
+  margin-bottom: 0;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.question-preview-card:hover {
+  border-color: #d8ddea;
+
+  box-shadow: 0 2px 7px rgba(30, 38, 60, 0.035);
 }
 
 .question-preview-card:last-child {
   margin-bottom: 0;
 }
 
+
+/* =========================================================
+   QUESTION NUMBER
+   ========================================================= */
+
 .question-number {
-  font-size: 13px;
-  font-weight: 700;
-  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 22px;
+
+  padding: 3px 8px;
+
   margin-bottom: 10px;
+
+  border-radius: 4px;
+
+  background: #eef1ff;
+  color: #596ee7;
+
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 600;
 }
 
+
+/* =========================================================
+   QUESTION TEXT
+   ========================================================= */
+
 .question-text {
-  font-size: 17px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 16px;
+  margin: 0 0 13px;
+
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 500;
+
+  color: #2d3444;
 }
+
+
+/* =========================================================
+   OPTIONS
+   ========================================================= */
 
 .options-list {
   margin: 0;
-  padding-left: 24px;
+  padding: 0;
+
+  list-style: none;
+
+  counter-reset: option;
 }
 
 .options-list li {
-  padding: 8px 0;
-  color: #374151;
+  position: relative;
+
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 8px 12px 8px 40px;
+  margin-bottom: 7px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #edf0f4;
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  color: #555d6e;
+
+  font-size: 12px;
+  line-height: 18px;
+
+  counter-increment: option;
 }
+
+.options-list li::before {
+  content: counter(option, upper-alpha);
+
+  position: absolute;
+  left: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  border: 1px solid #dce1eb;
+  border-radius: 50%;
+
+  color: #7c8496;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.options-list li:last-child {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   CORRECT ANSWER
+   ========================================================= */
 
 .correct-answer {
-  margin-top: 14px;
-  padding: 10px 12px;
-  background: #f0fdf4;
-  border-radius: 7px;
-  color: #166534;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  margin-top: 12px;
+
+  padding: 9px 11px;
+
+  border: 1px solid #d9efdf;
+  border-radius: 5px;
+
+  background: #f5fcf7;
+
+  color: #39804c;
+
+  font-size: 11px;
+  line-height: 16px;
 }
 
-.explanation {
-  margin-top: 12px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 7px;
-  color: #4b5563;
-  font-size: 14px;
+.correct-answer strong {
+  font-weight: 600;
 }
+
+
+/* =========================================================
+   EXPLANATION
+   ========================================================= */
+
+.explanation {
+  margin-top: 9px;
+
+  padding: 10px 11px;
+
+  border: 1px solid #edf0f4;
+  border-radius: 5px;
+
+  background: #fafbfc;
+
+  color: #737b8c;
+
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.explanation strong {
+  color: #555d6e;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   QUESTION META
+   ========================================================= */
 
 .question-meta {
   display: flex;
-  gap: 8px;
-  margin-top: 14px;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 11px;
+
   flex-wrap: wrap;
 }
 
 .meta-badge {
-  display: inline-block;
-  padding: 4px 9px;
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 21px;
+
+  padding: 3px 8px;
+
+  border: 1px solid #e2e5ec;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: #4b5563;
-  font-size: 12px;
+
+  background: #f8f9fb;
+
+  color: #747c8d;
+
+  font-size: 9px;
+  line-height: 13px;
   font-weight: 600;
+
+  text-transform: capitalize;
 }
+
+
+/* First badge = question type */
+
+.question-meta .meta-badge:first-child {
+  background: #f0f2ff;
+  border-color: #dfe3ff;
+  color: #6275e8;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
 
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #6b7280;
+
+  padding: 48px 20px;
+
+  border: 1px dashed #dfe3eb;
+  border-radius: 6px;
+
+  color: #8a91a1;
+
+  background: #fbfcfd;
+
+  font-size: 12px;
+  line-height: 18px;
 }
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
 
 .loading-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 300px;
+
+  color: #858d9f;
+
+  font-size: 12px;
 }
 
-.error-state {
-  padding: 16px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+
+/* =========================================================
+   BOTTOM ACTIONS
+   Edit Test = extreme left
+   Next = extreme right
+   ========================================================= */
+
+.preview-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+
+  gap: 8px;
+
+  padding-top: 4px;
+
+  box-sizing: border-box;
 }
 
-.primary-button,
-.secondary-button {
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+.preview-bottom-actions .secondary-button {
+  width: 200px;
+  height: 48px;
+
+  flex-shrink: 0;
 }
 
-.primary-button {
-  background: #2563eb;
+
+/* =========================================================
+   EDIT TEST BUTTON
+   ========================================================= */
+
+.preview-bottom-actions .secondary-button:first-child {
+  margin-right: auto;
+
+  background-color: #ff7f7f;
+  border-color: #ff7f7f;
   color: #ffffff;
 }
 
-.primary-button:hover {
-  background: #1d4ed8;
+.preview-bottom-actions .secondary-button:first-child:hover {
+  background-color: #ff6f6f;
+  border-color: #ff6f6f;
+  color: #ffffff;
 }
 
-.secondary-button {
-  background: #ffffff;
-  color: #374151;
-  border: 1px solid #d1d5db;
+
+/* =========================================================
+   NEXT BUTTON
+   ========================================================= */
+
+.preview-bottom-actions .secondary-button:last-child {
+  margin-left: auto;
+
+  background-color: #7489ff;
+  border-color: #7489ff;
+  color: #ffffff;
 }
 
-.secondary-button:hover {
-  background: #f9fafb;
+.preview-bottom-actions .secondary-button:last-child:hover {
+  background-color: #687cf5;
+  border-color: #687cf5;
+  color: #ffffff;
 }
+
+
+/* =========================================================
+   FOCUS STATES
+   ========================================================= */
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible {
+  outline: 2px solid #aeb9ff;
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .test-preview-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - SMALL TABLET
+   ========================================================= */
 
 @media (max-width: 800px) {
-  .test-info-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .test-preview-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .preview-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .test-statistics {
+    position: static;
+
+    width: fit-content;
+
+    margin-top: 12px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 560px) {
+  .test-preview-container {
+    padding: 20px 14px 30px;
   }
 
   .test-preview-header {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 500px) {
-  .test-info-grid {
-    grid-template-columns: 1fr;
+    padding-bottom: 16px;
   }
 
-  .test-preview-page {
-    padding: 20px 12px;
+  .test-preview-title h1 {
+    font-size: 18px;
   }
 
   .preview-card {
-    padding: 16px;
+    padding: 15px;
+  }
+
+
+  /* Test details */
+
+  .test-details-card {
+    min-height: auto;
+
+    padding: 14px;
+  }
+
+  .test-details-top {
+    align-items: flex-start;
+  }
+
+  .test-name {
+    font-size: 10px;
+  }
+
+  .test-details-info {
+    gap: 4px;
+  }
+
+  .test-statistics {
+    position: static;
+
+    display: flex;
+
+    width: fit-content;
+
+    max-width: 100%;
+
+    margin-top: 12px;
+
+    overflow-x: auto;
+  }
+
+  .test-stat {
+    padding: 0 5px;
+  }
+
+
+  /* Bottom actions */
+
+  .preview-bottom-actions {
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    gap: 8px;
+  }
+
+  .preview-bottom-actions .secondary-button {
+    width: 200px;
+    flex-shrink: 1;
+  }
+
+
+  /* Questions */
+
+  .question-preview-card {
+    padding: 14px;
+  }
+
+  .question-text {
+    font-size: 13px;
+    line-height: 20px;
   }
 }
-```

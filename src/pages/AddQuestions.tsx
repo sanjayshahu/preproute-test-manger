@@ -19,6 +19,8 @@ import type {
   QuestionPayload,
 } from "../types/question";
 
+import AppLayout from "../components/AppLayout";
+
 import "./AddQuestions.css";
 
 interface ExistingQuestion extends QuestionPayload {
@@ -1005,540 +1007,535 @@ export default function AddQuestions() {
    */
 
   return (
-    <main className="add-questions-page">
+    <AppLayout>
+      <main className="add-questions-page">
 
-      <div className="add-questions-container">
+        <div className="add-questions-container">
 
-        {/* HEADER */}
+          {/* HEADER */}
 
-        <header className="page-header">
+          <header className="page-header">
 
-          <div>
-            <h1>
-              Questions
-            </h1>
-
-            <p>
-              Add or edit MCQ questions
-              for your test.
-            </p>
-          </div>
-
-          <div className="question-count">
-            {questions.length} Questions
-          </div>
-
-        </header>
-
-        {/* ERROR */}
-
-        {error && (
-          <div className="question-error">
-            {error}
-          </div>
-        )}
-
-        {/* LOADING TEST */}
-
-        {loadingTest && (
-          <section className="question-card">
-            <p>
-              Loading test information...
-            </p>
-          </section>
-        )}
-
-        {/* TEST INFORMATION */}
-
-        {!loadingTest &&
-          testSubject && (
-            <section className="question-card">
-
-              <h2>
-                Test Information
-              </h2>
+            <div>
+              <h1>
+                Questions
+              </h1>
 
               <p>
-                <strong>
-                  Subject:
-                </strong>{" "}
-                {testSubject}
+                Add or edit MCQ questions
+                for your test.
+              </p>
+            </div>
+
+            <div className="question-count">
+              {questions.length} Questions
+            </div>
+
+          </header>
+
+          {/* ERROR */}
+
+          {error && (
+            <div className="question-error">
+              {error}
+            </div>
+          )}
+
+          {/* LOADING TEST */}
+
+          {loadingTest && (
+            <section className="question-card">
+              <p>
+                Loading test information...
+              </p>
+            </section>
+          )}
+
+          {/* TEST INFORMATION */}
+
+          {!loadingTest &&
+            testSubject && (
+              <section className="question-card">
+
+                <h2>
+                  Test Information
+                </h2>
+
+                <p>
+                  <strong>
+                    Subject:
+                  </strong>{" "}
+                  {testSubject}
+                </p>
+
+              </section>
+            )}
+
+          {/* LOADING QUESTIONS */}
+
+          {loadingQuestions && (
+            <section className="question-card">
+
+              <p>
+                Loading existing questions...
               </p>
 
             </section>
           )}
 
-        {/* LOADING QUESTIONS */}
+          {/* QUESTION FORM */}
 
-        {loadingQuestions && (
-          <section className="question-card">
-
-            <p>
-              Loading existing questions...
-            </p>
-
-          </section>
-        )}
-
-        {/* QUESTION FORM */}
-
-        {!loadingQuestions && (
-          <section className="question-card">
-
-            <h2>
-              {editingQuestionId
-                ? `Edit Question ${currentQuestionNumber}`
-                : `Question ${currentQuestionNumber}`}
-            </h2>
-
-            {/* QUESTION */}
-
-            <div className="form-field full">
-
-              <label>
-                Question
-              </label>
-
-              <textarea
-                value={
-                  form.question
-                }
-                onChange={(event) =>
-                  handleChange(
-                    "question",
-                    event.target.value
-                  )
-                }
-                placeholder="Enter your question"
-                rows={4}
-              />
-
-            </div>
-
-            {/* OPTIONS */}
-
-            <div className="options-grid">
-
-              <div className="form-field">
-
-                <label>
-                  Option 1
-                </label>
-
-                <input
-                  value={
-                    form.option1
-                  }
-                  onChange={(event) =>
-                    handleChange(
-                      "option1",
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter option 1"
-                />
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Option 2
-                </label>
-
-                <input
-                  value={
-                    form.option2
-                  }
-                  onChange={(event) =>
-                    handleChange(
-                      "option2",
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter option 2"
-                />
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Option 3
-                </label>
-
-                <input
-                  value={
-                    form.option3
-                  }
-                  onChange={(event) =>
-                    handleChange(
-                      "option3",
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter option 3"
-                />
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Option 4
-                </label>
-
-                <input
-                  value={
-                    form.option4
-                  }
-                  onChange={(event) =>
-                    handleChange(
-                      "option4",
-                      event.target.value
-                    )
-                  }
-                  placeholder="Enter option 4"
-                />
-
-              </div>
-
-            </div>
-
-            {/* CORRECT OPTION + DIFFICULTY */}
-
-            <div className="form-grid">
-
-              <div className="form-field">
-
-                <label>
-                  Correct Option
-                </label>
-
-                <select
-                  value={
-                    form.correct_option
-                  }
-                  onChange={(event) =>
-                    handleChange(
-                      "correct_option",
-                      event.target.value
-                    )
-                  }
-                >
-
-                  <option value="option1">
-                    Option 1
-                  </option>
-
-                  <option value="option2">
-                    Option 2
-                  </option>
-
-                  <option value="option3">
-                    Option 3
-                  </option>
-
-                  <option value="option4">
-                    Option 4
-                  </option>
-
-                </select>
-
-              </div>
-
-              <div className="form-field">
-
-                <label>
-                  Difficulty
-                </label>
-
-                <select
-                  value={
-                    form.difficulty
-                  }
-                  onChange={(event) =>
-                    handleChange(
-                      "difficulty",
-                      event.target.value
-                    )
-                  }
-                >
-
-                  <option value="easy">
-                    Easy
-                  </option>
-
-                  <option value="medium">
-                    Medium
-                  </option>
-
-                  <option value="hard">
-                    Hard
-                  </option>
-
-                </select>
-
-              </div>
-
-            </div>
-
-            {/* EXPLANATION */}
-
-            <div className="form-field full">
-
-              <label>
-                Explanation
-                <span>
-                  {" "}
-                  (optional)
-                </span>
-              </label>
-
-              <textarea
-                value={
-                  form.explanation
-                }
-                onChange={(event) =>
-                  handleChange(
-                    "explanation",
-                    event.target.value
-                  )
-                }
-                placeholder="Explain the correct answer"
-                rows={3}
-              />
-
-            </div>
-
-            {/* FORM BUTTONS */}
-
-            <div className="question-actions">
-
-              {editingQuestionId && (
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={
-                    cancelEdit
-                  }
-                  disabled={saving}
-                >
-                  Cancel Edit
-                </button>
-              )}
-
-              <button
-                type="button"
-                className="primary-button"
-                onClick={
-                  editingQuestionId
-                    ? updateQuestionLocally
-                    : addQuestion
-                }
-                disabled={
-                  loadingTest ||
-                  !testSubject ||
-                  saving
-                }
-              >
-                {editingQuestionId
-                  ? `Update Question ${currentQuestionNumber}`
-                  : `+ Add Question`}
-              </button>
-
-            </div>
-
-          </section>
-        )}
-
-        {/* QUESTIONS LIST */}
-
-        {!loadingQuestions &&
-          questions.length > 0 && (
-
-            <section className="added-questions">
+          {!loadingQuestions && (
+            <section className="question-card">
 
               <h2>
-                Added Questions
+                {editingQuestionId
+                  ? `Edit Question ${currentQuestionNumber}`
+                  : `Question ${currentQuestionNumber}`}
               </h2>
 
-              {questions.map(
-                (
-                  question,
-                  index
-                ) => (
+              {/* QUESTION */}
 
-                  <article
-                    className="question-preview"
-                    key={question.id}
+              <div className="form-field full">
+
+                <label>
+                  Question
+                </label>
+
+                <textarea
+                  value={
+                    form.question
+                  }
+                  onChange={(event) =>
+                    handleChange(
+                      "question",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Enter your question"
+                  rows={4}
+                />
+
+              </div>
+
+              {/* OPTIONS */}
+
+              <div className="options-grid">
+
+                <div className="form-field">
+
+                  <label>
+                    Option 1
+                  </label>
+
+                  <input
+                    value={
+                      form.option1
+                    }
+                    onChange={(event) =>
+                      handleChange(
+                        "option1",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter option 1"
+                  />
+
+                </div>
+
+                <div className="form-field">
+
+                  <label>
+                    Option 2
+                  </label>
+
+                  <input
+                    value={
+                      form.option2
+                    }
+                    onChange={(event) =>
+                      handleChange(
+                        "option2",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter option 2"
+                  />
+
+                </div>
+
+                <div className="form-field">
+
+                  <label>
+                    Option 3
+                  </label>
+
+                  <input
+                    value={
+                      form.option3
+                    }
+                    onChange={(event) =>
+                      handleChange(
+                        "option3",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter option 3"
+                  />
+
+                </div>
+
+                <div className="form-field">
+
+                  <label>
+                    Option 4
+                  </label>
+
+                  <input
+                    value={
+                      form.option4
+                    }
+                    onChange={(event) =>
+                      handleChange(
+                        "option4",
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter option 4"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* CORRECT OPTION + DIFFICULTY */}
+
+              <div className="form-grid">
+
+                <div className="form-field">
+
+                  <label>
+                    Correct Option
+                  </label>
+
+                  <select
+                    value={
+                      form.correct_option
+                    }
+                    onChange={(event) =>
+                      handleChange(
+                        "correct_option",
+                        event.target.value
+                      )
+                    }
                   >
 
-                    <div className="question-preview-header">
+                    <option value="option1">
+                      Option 1
+                    </option>
 
-                      <strong>
-                        Question{" "}
-                        {index + 1}
-                      </strong>
+                    <option value="option2">
+                      Option 2
+                    </option>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "8px",
-                        }}
-                      >
+                    <option value="option3">
+                      Option 3
+                    </option>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            editQuestion(
-                              question,
-                              index
-                            )
-                          }
-                          disabled={
-                            saving ||
-                            deletingQuestionId ===
-                              question.id
-                          }
+                    <option value="option4">
+                      Option 4
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <div className="form-field">
+
+                  <label>
+                    Difficulty
+                  </label>
+
+                  <select
+                    value={
+                      form.difficulty
+                    }
+                    onChange={(event) =>
+                      handleChange(
+                        "difficulty",
+                        event.target.value
+                      )
+                    }
+                  >
+
+                    <option value="easy">
+                      Easy
+                    </option>
+
+                    <option value="medium">
+                      Medium
+                    </option>
+
+                    <option value="hard">
+                      Hard
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+              {/* EXPLANATION */}
+
+              <div className="form-field full">
+
+                <label>
+                  Explanation
+                  <span>
+                    {" "}
+                    (optional)
+                  </span>
+                </label>
+
+                <textarea
+                  value={
+                    form.explanation
+                  }
+                  onChange={(event) =>
+                    handleChange(
+                      "explanation",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Explain the correct answer"
+                  rows={3}
+                />
+
+              </div>
+
+              {/* FORM BUTTONS */}
+
+              <div className="question-actions">
+
+                {editingQuestionId && (
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={
+                      cancelEdit
+                    }
+                    disabled={saving}
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={
+                    editingQuestionId
+                      ? updateQuestionLocally
+                      : addQuestion
+                  }
+                  disabled={
+                    loadingTest ||
+                    !testSubject ||
+                    saving
+                  }
+                >
+                  {editingQuestionId
+                    ? `Update Question ${currentQuestionNumber}`
+                    : `+ Add Question`}
+                </button>
+
+              </div>
+
+            </section>
+          )}
+
+          {/* QUESTIONS LIST */}
+
+          {!loadingQuestions &&
+            questions.length > 0 && (
+
+              <section className="added-questions">
+
+                <h2>
+                  Added Questions
+                </h2>
+
+                {questions.map(
+                  (
+                    question,
+                    index
+                  ) => (
+
+                    <article
+                      className="question-preview"
+                      key={question.id}
+                    >
+
+                      <div className="question-preview-header">
+
+                        <strong>
+                          Question{" "}
+                          {index + 1}
+                        </strong>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "8px",
+                          }}
                         >
-                          Edit
-                        </button>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            deleteQuestion(
-                              question,
-                              index
-                            )
-                          }
-                          disabled={
-                            saving ||
-                            deletingQuestionId ===
-                              question.id
-                          }
-                        >
-                          {deletingQuestionId ===
-                          question.id
-                            ? "Deleting..."
-                            : "Delete"}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              editQuestion(
+                                question,
+                                index
+                              )
+                            }
+                            disabled={
+                              saving ||
+                              deletingQuestionId ===
+                                question.id
+                            }
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              deleteQuestion(
+                                question,
+                                index
+                              )
+                            }
+                            disabled={
+                              saving ||
+                              deletingQuestionId ===
+                                question.id
+                            }
+                          >
+                            {deletingQuestionId ===
+                            question.id
+                              ? "Deleting..."
+                              : "Delete"}
+                          </button>
+
+                        </div>
 
                       </div>
 
-                    </div>
+                      <p>
+                        {question.question}
+                      </p>
 
-                    <p>
-                      {question.question}
-                    </p>
+                      <ol>
+                        <li>
+                          {question.option1}
+                        </li>
 
-                    <ol>
-                      <li>
-                        {question.option1}
-                      </li>
+                        <li>
+                          {question.option2}
+                        </li>
 
-                      <li>
-                        {question.option2}
-                      </li>
+                        <li>
+                          {question.option3}
+                        </li>
 
-                      <li>
-                        {question.option3}
-                      </li>
+                        <li>
+                          {question.option4}
+                        </li>
+                      </ol>
 
-                      <li>
-                        {question.option4}
-                      </li>
-                    </ol>
-
-                    <div>
-                      Correct answer:{" "}
-
-                      <strong>
-                        {
-                          question.correct_option
-                        }
-                      </strong>
-                    </div>
-
-                    {question.explanation && (
                       <div>
-                        Explanation:{" "}
+                        Correct answer:{" "}
 
                         <strong>
                           {
-                            question.explanation
+                            question.correct_option
                           }
                         </strong>
                       </div>
-                    )}
 
-                    <div>
-                      Difficulty:{" "}
+                      {question.explanation && (
+                        <div>
+                          Explanation:{" "}
 
-                      <strong>
-                        {
-                          question.difficulty
-                        }
-                      </strong>
-                    </div>
+                          <strong>
+                            {
+                              question.explanation
+                            }
+                          </strong>
+                        </div>
+                      )}
 
-                    <div>
-                      Subject:{" "}
+                      <div>
+                        Difficulty:{" "}
 
-                      <strong>
-                        {
-                          question.subject
-                        }
-                      </strong>
-                    </div>
+                        <strong>
+                          {
+                            question.difficulty
+                          }
+                        </strong>
+                      </div>
 
-                  </article>
+                      <div>
+                        Subject:{" "}
 
-                )
-              )}
+                        <strong>
+                          {
+                            question.subject
+                          }
+                        </strong>
+                      </div>
 
-            </section>
+                    </article>
 
-          )}
+                  )
+                )}
 
-        {/* BOTTOM ACTIONS */}
+              </section>
 
-        <div className="bottom-actions">
+            )}
 
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={handleBack}
-            disabled={saving}
-          >
-            Back to Preview
-          </button>
+          {/* BOTTOM ACTIONS */}
 
-          <button
-            type="button"
-            className="primary-button"
-            disabled={
-              questions.length === 0 ||
-              saving ||
-              loadingTest ||
-              loadingQuestions ||
-              !testSubject ||
-              !!editingQuestionId
-            }
-            onClick={
-              saveQuestions
-            }
-          >
-            {saving
-              ? "Saving..."
-              : "Save & Continue"}
-          </button>
+          <div className="bottom-actions">
+
+        
+
+            <button
+              type="button"
+              className="primary-button"
+              disabled={
+                questions.length === 0 ||
+                saving ||
+                loadingTest ||
+                loadingQuestions ||
+                !testSubject ||
+                !!editingQuestionId
+              }
+              onClick={
+                saveQuestions
+              }
+            >
+              {saving
+                ? "Saving..."
+                : "Save & Continue"}
+            </button>
+
+          </div>
 
         </div>
 
-      </div>
-
-    </main>
+      </main>
+    </AppLayout>
   );
 }

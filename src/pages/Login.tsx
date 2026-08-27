@@ -49,14 +49,35 @@ export default function Login() {
         return;
       }
 
-      localStorage.setItem("token", response.data.token);
+      
+// Save authentication data
+localStorage.setItem(
+  "token",
+  response.data.token
+);
 
-      console.log(
-        "TOKEN SAVED:",
-        localStorage.getItem("token")
-      );
+localStorage.setItem(
+  "user",
+  JSON.stringify(response.data.user)
+);
 
-      navigate("/dashboard");
+console.log(
+  "TOKEN SAVED:",
+  localStorage.getItem("token")
+);
+
+console.log(
+  "USER SAVED:",
+  JSON.parse(
+    localStorage.getItem("user") || "{}"
+  )
+);
+
+navigate("/dashboard");
+
+
+
+  
     } catch (error: any) {
       console.error("LOGIN ERROR:", error);
 

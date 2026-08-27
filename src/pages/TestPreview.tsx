@@ -6,6 +6,8 @@ import { fetchQuestionsBulk } from "../api/questions";
 
 import type { Test } from "../types/test";
 
+import AppLayout from "../components/AppLayout";
+
 import "./TestPreview.css";
 
 interface PreviewQuestion {
@@ -228,24 +230,6 @@ export default function TestPreview() {
          * --------------------------------------
          * 5. KEEP API RESPONSE ORDER
          * --------------------------------------
-         *
-         * Example:
-         *
-         * API:
-         *
-         * 1. missl
-         * 2. final
-         * 3. wat
-         * 4. fire
-         * 5. howzees
-         *
-         * Preview will display exactly:
-         *
-         * 1. missl
-         * 2. final
-         * 3. wat
-         * 4. fire
-         * 5. howzees
          */
 
         console.log(
@@ -419,6 +403,80 @@ export default function TestPreview() {
 
   /*
    * ==========================================
+   * SIDEBAR QUESTION NAVIGATION
+   * ==========================================
+   */
+
+  const sidebarQuestions =
+    questions.map(
+      (question, index) => ({
+        id: question.id,
+        label: `Question ${index + 1}`,
+        status: "complete",
+      })
+    );
+
+  const handleQuestionClick = (
+    question: {
+      id: string;
+      label: string;
+      status: string;
+    }
+  ) => {
+    const element =
+      document.getElementById(
+        question.id
+      );
+
+    element?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  /*
+   * ==========================================
+   * SIDEBAR NAVIGATION
+   * ==========================================
+   */
+
+  const handleSidebarNavigate = (
+    componentName:
+      | "Dashboard"
+      | "CreateTest"
+      | "TestTracking"
+      | "TestPreview"
+      | "TestConfirmation"
+  ) => {
+    switch (componentName) {
+      case "Dashboard":
+        navigate("/dashboard");
+        break;
+
+      case "CreateTest":
+        if (testId) {
+          navigate(
+            `/tests/${testId}/edit`
+          );
+        }
+        break;
+
+      case "TestTracking":
+        navigate("/test-tracking");
+        break;
+
+      case "TestConfirmation":
+      case "TestPreview":
+        // Already on preview/confirmation flow
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  /*
+   * ==========================================
    * LOADING
    * ==========================================
    */
@@ -471,40 +529,296 @@ export default function TestPreview() {
    */
 
   return (
-    <main className="test-preview-page">
+    <AppLayout
+      componentName="TestPreview"
+      totalQuestions={
+        questions.length
+      }
+      questions={
+        sidebarQuestions
+      }
+      onQuestionClick={
+        handleQuestionClick
+      }
+      onNavigate={
+        handleSidebarNavigate
+      }
+    >
+      <main className="test-preview-page">
+        <div className="test-preview-container">
 
-      <div className="test-preview-container">
+          {/* =====================================
+              HEADER
+          ====================================== */}
 
-        {/* =====================================
-            HEADER
-        ====================================== */}
+          <header className="test-preview-header">
 
-        <header className="test-preview-header">
+            <div className="test-preview-title">
+              <h1>
+                Test Preview
+              </h1>
 
-          <div className="test-preview-title">
+              <p>
+                Review the complete test before
+                publishing.
+              </p>
+            </div>
 
-            <h1>
-              Test Preview
-            </h1>
+            <div className="preview-actions">
 
-            <p>
-              Review the complete test before
-              publishing.
-            </p>
+             
 
-          </div>
+              
 
-          <div className="preview-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={handlePublish}
+              >
+                Publish
+              </button>
 
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={handleBack}
-            >
-              Dashboard
-            </button>
+            </div>
 
-            <button
+          </header>
+
+          {/* =====================================
+              ERROR
+          ====================================== */}
+
+          {error && (
+            <div className="error-state">
+              {error}
+            </div>
+          )}
+
+          {/* =====================================
+              TEST DETAILS
+          ====================================== */}
+
+         <section className="preview-card test-details-card">
+
+  {/* Top section */}
+  <div className="test-details-top">
+
+    <div className="test-details-main">
+
+      {/* Test type */}
+      <span className="test-type-badge">
+        {test.type || "Chapter Wise"}
+      </span>
+
+      {/* Chapter + difficulty */}
+      <div className="test-title-row">
+
+        <span className="chapter-icon">
+          📚
+        </span>
+
+        <span className="test-name">
+          {test.name || "Chapter 1"}
+        </span>
+
+        <span className="difficulty-badge">
+          {test.difficulty || "Easy"}
+        </span>
+
+      </div>
+
+    </div>
+
+    {/* Edit */}
+    <button
+      type="button"
+      className="test-edit-button"
+      onClick={handleEditTest}
+      aria-label="Edit test"
+    >
+      ✎
+    </button>
+
+  </div>
+
+
+  {/* Test information */}
+  <div className="test-details-info">
+
+    <div className="test-detail-row">
+      <span className="test-detail-label">
+        Subject
+      </span>
+
+      <span className="test-detail-separator">
+        :
+      </span>
+
+      <span className="test-detail-value">
+        {test.subject || "English"}
+      </span>
+    </div>
+
+
+    <div className="test-detail-row">
+      <span className="test-detail-label">
+        Topic
+      </span>
+
+      <span className="test-detail-separator">
+        :
+      </span>
+
+      <span className="test-detail-value topic-value">
+        {test.topic || "Grammar Writing"}
+      </span>
+    </div>
+
+
+    <div className="test-detail-row">
+      <span className="test-detail-label">
+        Sub Topic
+      </span>
+
+      <span className="test-detail-separator">
+        :
+      </span>
+
+      <span className="test-detail-value topic-value">
+        {test.sub_topic || "Application"}
+      </span>
+    </div>
+
+  </div>
+
+
+  {/* Bottom statistics */}
+  <div className="test-statistics">
+
+    <div className="test-stat">
+      <span className="stat-icon">◷</span>
+      <span>{test.total_time || 60} Min</span>
+    </div>
+
+    <div className="stat-divider"></div>
+
+    <div className="test-stat">
+      <span className="stat-icon">▣</span>
+      <span>{questions.length} Q's</span>
+    </div>
+
+    <div className="stat-divider"></div>
+
+    <div className="test-stat">
+      <span className="stat-icon">▤</span>
+      <span>{test.total_marks || 250} Marks</span>
+    </div>
+
+  </div>
+
+</section>
+
+          {/* =====================================
+              QUESTIONS
+          ====================================== */}
+
+          <section className="preview-card">
+
+            <h2>
+              Questions ({questions.length})
+            </h2>
+
+            {questions.length === 0 ? (
+
+              <div className="empty-state">
+                No questions have been added
+                to this test.
+              </div>
+
+            ) : (
+
+              <div className="questions-list">
+
+                {questions.map(
+                  (question, index) => (
+
+                    <article
+                      className="question-preview-card"
+                      key={question.id}
+                      id={question.id}
+                    >
+
+                      <div className="question-number">
+                        Question {index + 1}
+                      </div>
+
+                      <p className="question-text">
+                        {question.question}
+                      </p>
+
+                      <ol className="options-list">
+
+                        <li>
+                          {question.option1}
+                        </li>
+
+                        <li>
+                          {question.option2}
+                        </li>
+
+                        <li>
+                          {question.option3}
+                        </li>
+
+                        <li>
+                          {question.option4}
+                        </li>
+
+                      </ol>
+
+                      <div className="correct-answer">
+                        Correct answer:{" "}
+                        <strong>
+                          {question.correct_option}
+                        </strong>
+                      </div>
+
+                      {question.explanation && (
+                        <div className="explanation">
+                          <strong>
+                            Explanation:
+                          </strong>{" "}
+                          {question.explanation}
+                        </div>
+                      )}
+
+                      <div className="question-meta">
+
+                        <span className="meta-badge">
+                          {question.type}
+                        </span>
+
+                        {question.difficulty && (
+                          <span className="meta-badge">
+                            {question.difficulty}
+                          </span>
+                        )}
+
+                      </div>
+
+                    </article>
+                  )
+                )}
+
+              </div>
+            )}
+
+          </section>
+
+          {/* =====================================
+              BOTTOM ACTIONS
+          ====================================== */}
+
+          <div className="preview-actions preview-bottom-actions">
+              <button
               type="button"
               className="secondary-button"
               onClick={handleEditTest}
@@ -515,299 +829,19 @@ export default function TestPreview() {
             <button
               type="button"
               className="secondary-button"
-              onClick={handleEditQuestions}
+              onClick={handleBack}
             >
-              Edit Questions
+              Next
             </button>
 
-          </div>
+          
 
-        </header>
-
-        {/* =====================================
-            ERROR
-        ====================================== */}
-
-        {error && (
-          <div className="error-state">
-            {error}
-          </div>
-        )}
-
-        {/* =====================================
-            TEST DETAILS
-        ====================================== */}
-
-        <section className="preview-card">
-
-          <h2>
-            Test Details
-          </h2>
-
-          <div className="test-info-grid">
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Name
-              </span>
-
-              <span className="info-value">
-                {test.name}
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Subject
-              </span>
-
-              <span className="info-value">
-                {test.subject}
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Type
-              </span>
-
-              <span className="info-value">
-                {test.type}
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Difficulty
-              </span>
-
-              <span className="info-value">
-                {test.difficulty}
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Questions
-              </span>
-
-              <span className="info-value">
-                {questions.length}
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Total Marks
-              </span>
-
-              <span className="info-value">
-                {test.total_marks}
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Time
-              </span>
-
-              <span className="info-value">
-                {test.total_time} minutes
-              </span>
-
-            </div>
-
-            <div className="info-item">
-
-              <span className="info-label">
-                Status
-              </span>
-
-              <span className="info-value">
-                {test.status ||
-                  "draft"}
-              </span>
-
-            </div>
+           
 
           </div>
-
-        </section>
-
-        {/* =====================================
-            QUESTIONS
-        ====================================== */}
-
-        <section className="preview-card">
-
-          <h2>
-            Questions ({questions.length})
-          </h2>
-
-          {questions.length === 0 ? (
-
-            <div className="empty-state">
-              No questions have been added
-              to this test.
-            </div>
-
-          ) : (
-
-            <div className="questions-list">
-
-              {questions.map(
-                (
-                  question,
-                  index
-                ) => (
-
-                  <article
-                    className="question-preview-card"
-                    key={question.id}
-                  >
-
-                    {/* QUESTION NUMBER */}
-
-                    <div className="question-number">
-                      Question {index + 1}
-                    </div>
-
-                    {/* QUESTION */}
-
-                    <p className="question-text">
-                      {question.question}
-                    </p>
-
-                    {/* OPTIONS */}
-
-                    <ol className="options-list">
-
-                      <li>
-                        {question.option1}
-                      </li>
-
-                      <li>
-                        {question.option2}
-                      </li>
-
-                      <li>
-                        {question.option3}
-                      </li>
-
-                      <li>
-                        {question.option4}
-                      </li>
-
-                    </ol>
-
-                    {/* CORRECT ANSWER */}
-
-                    <div className="correct-answer">
-
-                      Correct answer:{" "}
-
-                      <strong>
-                        {question.correct_option}
-                      </strong>
-
-                    </div>
-
-                    {/* EXPLANATION */}
-
-                    {question.explanation && (
-                      <div className="explanation">
-
-                        <strong>
-                          Explanation:
-                        </strong>{" "}
-
-                        {question.explanation}
-
-                      </div>
-                    )}
-
-                    {/* META */}
-
-                    <div className="question-meta">
-
-                      <span className="meta-badge">
-                        {question.type}
-                      </span>
-
-                      {question.difficulty && (
-                        <span className="meta-badge">
-                          {
-                            question.difficulty
-                          }
-                        </span>
-                      )}
-
-                    </div>
-
-                  </article>
-
-                )
-              )}
-
-            </div>
-
-          )}
-
-        </section>
-
-        {/* =====================================
-            BOTTOM ACTIONS
-        ====================================== */}
-
-        <div className="preview-actions preview-bottom-actions">
-
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={handleBack}
-          >
-            Back to Dashboard
-          </button>
-
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={handleEditQuestions}
-          >
-            Edit Questions
-          </button>
-
-          <button
-            type="button"
-            className="primary-button"
-            disabled={
-              questions.length === 0 ||
-              publishing
-            }
-            onClick={handlePublish}
-          >
-            {publishing
-              ? "Publishing..."
-              : "Publish Test"}
-          </button>
 
         </div>
-
-      </div>
-
-    </main>
+      </main>
+    </AppLayout>
   );
 }

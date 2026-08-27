@@ -1,57 +1,91 @@
+/* ==================================================
+   PAGE
+================================================== */
+
 .create-test-page {
   min-height: 100vh;
   background: #f8fafc;
-  padding: 32px;
+  padding: 32px 24px;
+  box-sizing: border-box;
 }
 
 .create-test-container {
+  width: 100%;
   max-width: 1000px;
   margin: 0 auto;
 }
 
+
+/* ==================================================
+   HEADER
+================================================== */
+
 .create-test-header {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .create-test-header h1 {
   margin: 0;
   font-size: 28px;
+  line-height: 1.3;
+  font-weight: 600;
   color: #111827;
 }
 
 .create-test-header p {
-  margin-top: 7px;
+  margin: 7px 0 0;
   color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
+
+/* ==================================================
+   FORM
+================================================== */
+
+.create-test-container form {
+  width: 100%;
+}
+
+
+/* ==================================================
+   FORM CARD
+================================================== */
+
 .form-card {
-  background: white;
+  width: 100%;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
 }
 
 .form-card h2 {
-  margin: 0 0 20px;
-  font-size: 17px;
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 600;
   color: #111827;
 }
 
-.section-description {
-  margin-top: -12px;
-  margin-bottom: 20px;
-  color: #6b7280;
-  font-size: 13px;
-}
+
+/* ==================================================
+   FORM GRID
+================================================== */
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 26px;
+  row-gap: 18px;
+  width: 100%;
 }
 
 .form-field {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -60,107 +94,474 @@
   grid-column: 1 / -1;
 }
 
-.form-field label {
-  margin-bottom: 7px;
-  font-size: 13px;
-  font-weight: 600;
+
+/* ==================================================
+   LABEL
+================================================== */
+
+.form-field > label {
+  margin: 0 0 7px;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
   color: #374151;
 }
 
-.form-field label span {
-  font-weight: 400;
-  color: #9ca3af;
-}
 
-.form-field input,
+/* ==================================================
+   INPUT + SELECT
+================================================== */
+
+.form-field input:not([type="radio"]),
 .form-field select {
   width: 100%;
+  height: 40px;
+  min-height: 38px;
   box-sizing: border-box;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 11px 12px;
-  font-size: 14px;
-  background: white;
+
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+
+  padding: 0px 11px;
+
+  background: #ffffff;
+  color: #111827;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 400;
+
   outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
-.form-field input:focus,
+.form-field input:not([type="radio"])::placeholder {
+  color: #a0a6b1;
+}
+
+.form-field input:not([type="radio"]):focus,
 .form-field select:focus {
-  border-color: #2563eb;
+  border-color: #7489ff;
+  box-shadow: 0 0 0 2px rgba(116, 137, 255, 0.10);
 }
 
-.field-error {
-  margin-top: 6px;
-  color: #dc2626;
-  font-size: 12px;
+.form-field input:not([type="radio"]):disabled,
+.form-field select:disabled {
+  background: #f5f6f8;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 
-.checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+
+/* ==================================================
+   SELECT / DROPDOWN
+================================================== */
+
+.form-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
 }
 
-.checkbox-item {
+.form-field select:disabled {
+  cursor: not-allowed;
+}
+
+
+/* ==================================================
+   REMOVE MULTI-SELECT APPEARANCE
+   Topic and Sub Topic are normal dropdowns
+================================================== */
+
+.multi-select {
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 0 11px !important;
+  overflow: hidden;
+}
+
+.multi-select option {
+  padding: 0;
+}
+
+
+/* ==================================================
+   SELECT HELP
+================================================== */
+
+.select-help {
+  display: none;
+}
+
+
+/* ==================================================
+   TEST TYPE
+================================================== */
+
+.test-type-options {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 11px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+
+/* Badge */
+
+.test-type-badge {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 82px;
+  height: 32px;
+  min-height: 32px;
+
+  padding: 0 14px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #e1e5ec;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #6b7280;
+
+  font-size: 11px;
+  font-weight: 500;
+
   cursor: pointer;
-  font-size: 13px;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.checkbox-item:hover {
-  background: #f9fafb;
+
+/* Hide actual radio */
+
+.test-type-badge input[type="radio"] {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  opacity: 0;
+  pointer-events: none;
 }
 
-.checkbox-item input {
-  width: 16px;
-  height: 16px;
+
+/* Hover */
+
+.test-type-badge:hover {
+  border-color: #aebaff;
+  color: #5267df;
 }
 
-.muted {
-  color: #9ca3af;
-  font-size: 13px;
+
+/* Selected */
+
+.test-type-badge.active {
+  background: #f0f3ff;
+  border-color: #7489ff;
+  color: #5369e2;
+  font-weight: 600;
 }
+
+
+/* Keyboard focus */
+
+.test-type-badge:has(input[type="radio"]:focus-visible) {
+  box-shadow:
+    0 0 0 3px rgba(116, 137, 255, 0.15);
+}
+
+
+/* ==================================================
+   DIFFICULTY
+================================================== */
+
+.difficulty-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  min-height: 38px;
+
+  gap: 18px;
+}
+
+.difficulty-option {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin: 0;
+
+  color: #374151;
+
+  font-size: 11px;
+  font-weight: 400;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.difficulty-option input[type="radio"] {
+  appearance: none;
+
+  width: 13px;
+  height: 13px;
+  min-width: 13px;
+  min-height: 13px;
+
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid #9ca3af;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  position: relative;
+}
+
+.difficulty-option input[type="radio"]:checked {
+  border-color: #7489ff;
+}
+
+.difficulty-option input[type="radio"]:checked::after {
+  content: "";
+
+  position: absolute;
+
+  width: 7px;
+  height: 7px;
+
+  top: 2px;
+  left: 2px;
+
+  border-radius: 50%;
+
+  background: #7489ff;
+}
+
+.difficulty-option input[type="radio"]:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px rgba(116, 137, 255, 0.14);
+}
+
+.difficulty-option span {
+  user-select: none;
+}
+
+
+/* ==================================================
+   MARKING SCHEME
+================================================== */
+
+/*
+   Five fields in one row:
+
+   Wrong Answer
+   Unattempted
+   Correct Answer
+   No of Questions
+   Total Marks
+*/
+
+.marking-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  column-gap: 14px;
+  row-gap: 16px;
+
+  width: 100%;
+}
+
+.marking-grid .form-field {
+  min-width: 0;
+}
+
+
+/*
+   First three are number inputs
+*/
+
+.marking-grid .form-field:nth-child(1) input,
+.marking-grid .form-field:nth-child(2) input,
+.marking-grid .form-field:nth-child(3) input {
+  text-align: left;
+}
+
+
+/*
+   Last two are text fields
+*/
+
+.marking-grid .form-field:nth-child(4) input,
+.marking-grid .form-field:nth-child(5) input {
+  text-align: left;
+}
+
+
+/* ==================================================
+   TEST LIMITS
+================================================== */
+
+/*
+   Test Limits is no longer a separate visible section.
+   Its fields should be placed inside Marking Scheme
+   in the JSX.
+*/
+
+.form-card.test-limits {
+  display: none;
+}
+
+
+/*
+   Fallback for the current JSX structure:
+   The last .form-card is the old Test Limits section.
+*/
+
+form > .form-card:nth-of-type(6) {
+  display: none;
+}
+
+
+/* ==================================================
+   VALIDATION ERROR
+================================================== */
+
+.field-error {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #dc2626;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+
+/* ==================================================
+   API ERROR
+================================================== */
 
 .api-error {
   background: #fee2e2;
   color: #991b1b;
+
   border: 1px solid #fecaca;
-  padding: 12px 14px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  border-radius: 7px;
+
+  padding: 10px 12px;
+
+  margin-bottom: 16px;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* ==================================================
+   MUTED
+================================================== */
+
+.muted {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+
+/* ==================================================
+   LOADING
+================================================== */
+
+.loading-state {
+  min-height: 300px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #6b7280;
+
   font-size: 13px;
 }
 
+
+/* ==================================================
+   ACTIONS
+================================================== */
+
 .form-actions {
   display: flex;
+
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-bottom: 40px;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 8px;
+  padding-bottom: 30px;
 }
 
 .primary-button,
 .secondary-button {
-  padding: 11px 18px;
-  border-radius: 8px;
-  font-size: 14px;
+  height: 36px;
+  min-height: 36px;
+
+  padding: 0 18px;
+
+  border-radius: 6px;
+
+  font-family: inherit;
+  font-size: 11px;
   font-weight: 600;
+
   cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
 }
 
+
+/* Primary */
+
 .primary-button {
-  border: none;
-  background: #2563eb;
-  color: white;
+  border: 1px solid #7489ff;
+
+  background: #7489ff;
+  color: #ffffff;
 }
 
 .primary-button:hover {
-  background: #1d4ed8;
+  background: #657bf0;
+  border-color: #657bf0;
 }
 
 .primary-button:disabled {
@@ -168,32 +569,171 @@
   cursor: not-allowed;
 }
 
+
+/* Secondary */
+
 .secondary-button {
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid #d9dee7;
+
+  background: #ffffff;
   color: #374151;
 }
 
-@media (max-width: 700px) {
-  .create-test-page {
+.secondary-button:hover {
+  background: #f9fafb;
+  border-color: #bfc5d0;
+}
+
+
+/* ==================================================
+   DESKTOP WIDTH / FIGMA-LIKE SPACING
+================================================== */
+
+@media (min-width: 901px) {
+  .create-test-container {
+    max-width: 1000px;
+  }
+
+  .form-card {
     padding: 20px;
   }
+}
 
-  .form-grid,
-  .checkbox-grid {
-    grid-template-columns: 1fr;
+
+/* ==================================================
+   TABLET
+================================================== */
+
+@media (min-width: 701px) and (max-width: 900px) {
+  .create-test-page {
+    padding: 24px 20px;
   }
 
-  .form-field.full {
-    grid-column: auto;
+  .create-test-container {
+    max-width: 100%;
+  }
+
+  .form-card {
+    padding: 18px;
+  }
+
+  .marking-grid {
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr));
+
+    column-gap: 10px;
+  }
+
+  .difficulty-options {
+    gap: 12px;
+  }
+}
+
+
+/* ==================================================
+   MOBILE
+================================================== */
+
+@media (max-width: 700px) {
+  .create-test-page {
+    padding: 20px 14px;
+  }
+
+  .create-test-container {
+    max-width: 100%;
+  }
+
+  .create-test-header {
+    margin-bottom: 18px;
+  }
+
+  .create-test-header h1 {
+    font-size: 23px;
+  }
+
+  .create-test-header p {
+    font-size: 12px;
+  }
+
+  .form-card {
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .marking-grid {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .difficulty-options {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .test-type-options {
+    gap: 7px;
+  }
+
+  .test-type-badge {
+    min-width: 75px;
+    padding: 0 11px;
   }
 
   .form-actions {
-    flex-direction: column;
+    flex-direction: column-reverse;
+    align-items: stretch;
+
+    gap: 8px;
   }
 
   .primary-button,
   .secondary-button {
     width: 100%;
+  }
+}
+
+
+/* ==================================================
+   SMALL MOBILE
+================================================== */
+
+@media (max-width: 400px) {
+  .create-test-page {
+    padding: 16px 10px;
+  }
+
+  .form-card {
+    padding: 14px;
+  }
+
+  .difficulty-options {
+    gap: 12px;
+  }
+
+  .test-type-badge {
+    min-width: 70px;
+    padding: 0 9px;
+    font-size: 10px;
+  }
+}
+
+
+/* ==================================================
+   REDUCED MOTION
+================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .test-type-badge,
+  .form-field input,
+  .form-field select,
+  .primary-button,
+  .secondary-button {
+    transition: none;
   }
 }
