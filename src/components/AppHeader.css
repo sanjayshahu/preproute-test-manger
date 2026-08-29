@@ -1,0 +1,219 @@
+/* ==================================================
+   APP HEADER
+================================================== */
+
+.app-header {
+  width: 100%;
+
+  min-height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  padding: 15px 28px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* ==================================================
+   BREADCRUMB
+================================================== */
+
+.app-header-breadcrumb {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+
+  color: #6b7280;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  line-height: 1.4;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ==================================================
+   PROFILE
+================================================== */
+
+.app-header-profile {
+  display: flex;
+  align-items: center;
+
+  flex-shrink: 0;
+
+  gap: 10px;
+}
+
+
+/* ==================================================
+   NOTIFICATION
+================================================== */
+
+.app-header-notification {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-right: 8px;
+  padding: 0;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease;
+}
+
+.app-header-notification:hover {
+  background: #f3f4f6;
+}
+
+
+/* Notification image */
+
+.app-header-notification-icon {
+  width: 18px;
+  height: 18px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+
+/* ==================================================
+   AVATAR
+================================================== */
+
+.app-header-avatar {
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eef2ff;
+
+  color: #5369e2;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+}
+
+
+/* ==================================================
+   PROFILE COPY
+================================================== */
+
+.app-header-profile-copy {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+
+  min-width: 90px;
+}
+
+.app-header-profile-copy strong {
+  color: #111827;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  line-height: 1.4;
+
+  white-space: nowrap;
+}
+
+.app-header-profile-copy span {
+  margin-top: 2px;
+
+  color: #9ca3af;
+
+  font-size: 10px;
+  font-weight: 400;
+
+  line-height: 1.4;
+
+  white-space: nowrap;
+}
+
+
+/* ==================================================
+   CHEVRON
+================================================== */
+
+.app-header-chevron {
+  margin-left: 3px;
+
+  color: #9ca3af;
+
+  font-size: 14px;
+
+  line-height: 1;
+}
+
+
+/* ==================================================
+   MOBILE
+================================================== */
+
+@media (max-width: 600px) {
+  .app-header {
+    min-height: 58px;
+
+    padding: 0 16px;
+  }
+
+  .app-header-profile-copy {
+    display: none;
+  }
+
+  .app-header-notification {
+    margin-right: 4px;
+  }
+
+  .app-header-notification-icon {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+
+/* ==================================================
+   REDUCED MOTION
+================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .app-header-notification {
+    transition: none;
+  }
+}

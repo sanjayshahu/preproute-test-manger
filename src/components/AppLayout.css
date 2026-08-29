@@ -1,11 +1,41 @@
+/* ==================================================
+   APP LAYOUT
+================================================== */
+
 .app-layout {
   display: flex;
-  min-height: 100vh;
+
   width: 100%;
+  min-height: 100vh;
+
+  box-sizing: border-box;
+
+  background: #f8fafc;
 }
+
+
+/* ==================================================
+   MAIN CONTENT
+================================================== */
 
 .app-layout-content {
   flex: 1;
+
   min-width: 0;
+
   width: 100%;
+
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ==================================================
+   PAGE CONTENT
+================================================== */
+
+.app-layout-content > * {
+  box-sizing: border-box;
 }
